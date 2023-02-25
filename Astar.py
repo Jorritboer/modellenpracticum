@@ -58,36 +58,38 @@ def path(tile: Tile, arr = []):
     arr.insert(0, tile)
     return path(tile.parent, arr) 
 
-def Astar(grid: Grid, start: Tile, end: Tile):
+def Astar(grid: Grid, start: Tile, end: Tile, maxLength: int):
     hinitial = start.h(end)
     to_visit = queue.PriorityQueue()
     visited = list()
 
-    to_visit.put((start.h(end), start))
+    to_visit.put((start.h(end), start,0))
     while True:
-        if queue is list():
+        if len(to_visit.queue) == 0:
             print("NO PATH FOUND")
             break
-        s_tile = to_visit.get()[1]
+        _, s_tile, length = to_visit.get()
+         
         if s_tile == end:
+            print(path(s_tile))
             return path(s_tile)
-        if(s_tile.visited):
+        if(s_tile.visited or length >= maxLength):
             continue
         s_tile.visited = True
         new_tiles = s_tile.neighbours(grid)
         for c_tile in new_tiles:
-            if not c_tile.visited and c_tile not in [y for (x,y) in to_visit.queue]:
+            if not c_tile.visited and c_tile not in [y for (x,y,z) in to_visit.queue]:
                 c_tile.parent = s_tile
-                to_visit.put((c_tile.h(end), c_tile))
+                to_visit.put((c_tile.h(end), c_tile, length +1))
             elif c_tile in to_visit.queue:
                 if c_tile.h(end) < min([x[0] for x in to_visit.queue if x[1] == c_tile]):
                     c_tile.parent = s_tile
-                    to_visit.put((min([x[0] for x in to_visit.queue if x[1] == c_tile]) + c_tile.h(end), c_tile))
+                    to_visit.put((min([x[0] for x in to_visit.queue if x[1] == c_tile]) + c_tile.h(end), c_tile, length +1))
     
     return
 
 def main(grid: Grid):
-    print(Astar(grid, grid.tiles[0,0], grid.tiles[4,9])) 
-    return
-main(Grid(10,10))
-
+    Astar(grid, grid.tiles[0,0], grid.tiles[14,13],14) 
+    return 0
+main(Grid(20,20))
+print("DONE")
