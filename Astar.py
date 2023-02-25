@@ -39,10 +39,11 @@ class Tile:
 
 
 class Grid:
-    def __init__(self,width: int, height:int) -> None:
+    def __init__(self,width: int, height:int, lengthcost: int) -> None:
         self.tiles = np.array([[Tile(math.inf, Point(i,j)) for i in range(width)] for j in range(height)])
         self.width = width
         self.height = height
+        self.lengthcost = lengthcost #Scalar multiplied by length to increase cost for longer cables
         pass
 
     
@@ -80,16 +81,16 @@ def Astar(grid: Grid, start: Tile, end: Tile, maxLength: int):
         for c_tile in new_tiles:
             if not c_tile.visited and c_tile not in [y for (x,y,z) in to_visit.queue]:
                 c_tile.parent = s_tile
-                to_visit.put((c_tile.h(end), c_tile, length +1))
+                to_visit.put((c_tile.h(end) + (length+1)*grid.lengthcost, c_tile, length +1))
             elif c_tile in to_visit.queue:
                 if c_tile.h(end) < min([x[0] for x in to_visit.queue if x[1] == c_tile]):
                     c_tile.parent = s_tile
-                    to_visit.put((min([x[0] for x in to_visit.queue if x[1] == c_tile]) + c_tile.h(end), c_tile, length +1))
+                    to_visit.put((min([x[0] for x in to_visit.queue if x[1] == c_tile]) + c_tile.h(end) + (length+1)*grid.lengthcost, c_tile, length +1))
     
     return
 
 def main(grid: Grid):
     Astar(grid, grid.tiles[0,0], grid.tiles[14,13],14) 
     return 0
-main(Grid(20,20))
-print("DONE")
+main(Grid(20,20,3))
+
