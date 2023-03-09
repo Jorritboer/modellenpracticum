@@ -30,15 +30,14 @@ class Grid:
     def dimensions(self) -> Rect:
         """Get the dimensions of the grid."""
         return self._dimensions
-       
+
     def _tile_at(self, pos: Point) -> Tile:
         """Get Tile in grid given Point."""
         return self._tiles[pos.x, pos.y]
-    
+
     def tile_data_at(self, pos: Point) -> Optional[TileData]:
         """Get TileData in grid given Point."""
         return self._tile_at(pos).data
- 
 
     def register_tile_at(self, pos: Point, data: TileData) -> None:
         """Register the tile with the given tile data."""
@@ -108,8 +107,8 @@ class Grid:
         max_length: float -- the maximum length of the path, default None
         path_cost: float -- the base cost of the path per length unit, default 0
         existing_routes: List[List[Point]] -- existing paths that should be weighted more
-        existing_route_multiplier: float -- how much more existing paths should be weighted more (diminishes linearly with distance)
-        existing_route_radius: float -- how far the existing routes stretch for purpose of weight multiplication
+        existing_route_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance)
+        existing_route_radius: int -- how many tiles the existing routes stretch for purpose of weight multiplication
         """
         max_length = kwargs.get("max_length")
         path_cost = kwargs.get("path_cost") or 0
@@ -121,12 +120,21 @@ class Grid:
             self.reset()
         self._path_finding_has_run = True
 
-        if existing_routes is not None and len(existing_routes) > 0:
-            self._correct_weights_to_paths(existing_routes)
+        if existing_routes is not None:
+            existing_route_multiplier = kwargs.get("existing_route_multiplier") or 1
+            existing_route_radius = kwargs.get("existing_route_radius") or 0
+            if existing_route_multiplier < 1:
+                raise Exception(
+                    "An existing route multiplier of less than 1 makes no sense"
+                )
+            if existing_route_multiplier > 1 and len(existing_routes) > 0:
+                self._correct_weights_to_paths(
+                    existing_routes, existing_route_multiplier, existing_route_radius
+                )
 
         # Queue of (cost with heuristic, tile)
         to_visit = PriorityQueue()
-        from_tile.cost = from_tile.data.weight
+        from_tile.cost = from_tile.weight
         from_tile.path_length = 0
         to_visit.put(
             (
@@ -151,7 +159,7 @@ class Grid:
             neighbours = self._neighbours_of(s_tile)
             for c_tile in neighbours:
                 dist = s_tile.pos.dist(c_tile.pos)
-                c_cost = s_cost + c_tile.data.weight + dist * path_cost
+                c_cost = s_cost + c_tile.weight + dist * path_cost
                 c_full_cost = c_cost + c_tile.heuristic(to_tile, self._heuristic_of)
                 if c_tile.visited:
                     continue
@@ -166,13 +174,19 @@ class Grid:
                 c_tile.cost = c_cost
                 c_tile.path_length = s_tile.path_length + dist
                 to_visit.put((c_full_cost, c_tile))
-    
-    def _correct_weights_to_paths(self, routes: List[List[Point]], radius: int, multiplier: int) -> None:
-        to_visit = [(p,0) for p in route for route in routes]
+
+    def path_to_string(self, path: List[Point]) -> str:
+        """Format a path into a human-readable string."""
+        return " -> ".join([f"{pos.x},{pos.y}" for pos in path])
+
+    def _correct_weights_to_paths(
+        self, routes: List[List[Point]], multiplier: int, radius: int
+    ) -> None:
+        to_visit = [((p, 0) for p in route) for route in routes]
         for pos, _ in to_visit:
             self.tile_at(pos).visit()
 
-        while len(to_visit) >0:
+        while len(to_visit) > 0:
             pos, dist = to_visit.pop()
             tile = self.tile_at(pos)
             tile.weight = tile.data.weight * lerp(multiplier, 1, dist / radius)
@@ -181,6 +195,6 @@ class Grid:
             neighbours = [n for n in self._neighbours_of(tile) if not n.visited()]
             for neighbour in neighbours:
                 neighbour.visit()
-            to_visit.append([(n, dist+1) for n in neighbours])
+            to_visit.append([(n, dist + 1) for n in neighbours])
 
         self._undiscover_all()
