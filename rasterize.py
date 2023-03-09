@@ -14,7 +14,7 @@ def rasterize(extract: str, output: str, layer: str):
     print(f"Converting {gml_filename} to {gml_ogr2ogr_filename}...")
 
     subprocess.run(
-        ["ogr2ogr", "-nlt", "CONVERT_TO_LINEAR", gml_ogr2ogr_filename, gml_filename],
+        ["ogr2ogr", "-nlt", "CONVERT_TO_LINEAR", "-skipfailures", gml_ogr2ogr_filename, gml_filename],
         check=True,
     )
 
