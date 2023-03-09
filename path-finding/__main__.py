@@ -32,6 +32,58 @@ def main():
     )
 
     # Test 2
+    print("\nSimple 5x5 path with attributes")
+
+    grid = Grid(Rect(5, 5))
+    grid.register_tile_at(Point(0, 0), TileData())
+    grid.register_tile_at(
+        Point(1, 0), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(
+        Point(2, 0), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(
+        Point(3, 0), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(
+        Point(4, 0), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(
+        Point(4, 1), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(
+        Point(4, 2), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(
+        Point(4, 3), TileData(weight=1, attributes=[TileAttribute.Road])
+    )
+    grid.register_tile_at(Point(4, 4), TileData(weight=1))
+    grid.register_tile_at(
+        Point(1, 1), TileData(weight=1, attributes=[TileAttribute.Water])
+    )
+    grid.register_tile_at(
+        Point(2, 2), TileData(weight=1, attributes=[TileAttribute.Water])
+    )
+    grid.register_tile_at(
+        Point(3, 3), TileData(weight=1, attributes=[TileAttribute.Water])
+    )
+
+    print(
+        grid.path_to_string(
+            grid.find_path(
+                Point(0, 0),
+                Point(4, 4),
+                path_cost=1,
+                max_length=9,
+                attribute_multipliers={
+                    TileAttribute.Road: 0.5,
+                    TileAttribute.Water: 10,
+                },
+            )
+        )
+    )
+
+    # Test 3
     print("\nRandom 100x100 path, discouraging diagonal")
 
     grid = Grid(Rect(100, 100))
@@ -43,7 +95,7 @@ def main():
     first_path = grid.find_path(Point(0, 0), Point(99, 99))
     print(grid.path_to_string(first_path))
 
-    # Test 3
+    # Test 4
     print("\nRandom 100x100 path, discouraging diagonal with previous path")
     print(
         grid.path_to_string(

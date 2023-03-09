@@ -44,6 +44,10 @@ class TileData:
         """Unset tile attributes."""
         self._attributes.difference_update(attributes)
 
+    def get_attributes(self) -> List[TileAttribute]:
+        """Get a list of all tile attributes."""
+        return list(self._attributes)
+
     def has_attribute(self, attribute: TileAttribute) -> bool:
         """Check if the tile has a certain attribute."""
         return attribute in self._attributes

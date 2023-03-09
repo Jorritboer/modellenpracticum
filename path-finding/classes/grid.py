@@ -1,10 +1,11 @@
 from numpy import array
 from queue import PriorityQueue
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .point import Point
 from .rect import Rect
 from .tile import Tile
+from .tile_attribute import TileAttribute
 from .tile_data import TileData
 from ..helpers import lerp
 
@@ -106,20 +107,31 @@ class Grid:
         Optional arguments:
         max_length: float -- the maximum length of the path, default None
         path_cost: float -- the base cost of the path per length unit, default 0
-        existing_paths: List[List[Point]] -- existing paths that should be weighted more
-        existing_path_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance)
-        existing_path_radius: int -- how many tiles the existing paths stretch for purpose of weight multiplication
+        existing_paths: List[List[Point]] -- existing paths that should be weighted more, default None
+        existing_path_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance), default 1
+        existing_path_radius: int -- how many tiles the existing paths stretch for purpose of weight multiplication, default 0
+        attribute_multipliers: Dict[TileAttribute, float] -- weight multipliers for each TileAttribute, default 1
         """
+
+        # Variable setup and defaults
         max_length = kwargs.get("max_length")
         path_cost = kwargs.get("path_cost") or 0
         existing_paths = kwargs.get("existing_paths")
+        attribute_multipliers = kwargs.get("attribute_multipliers")
+
         from_tile = self._tile_at(from_pos)
         to_tile = self._tile_at(to_pos)
 
+        # Cleanup to prepare for running the algorithm
         if self._path_finding_has_run:
             self.reset()
         self._path_finding_has_run = True
 
+        # Correct weights to attributes
+        if attribute_multipliers is not None:
+            self._correct_weights_to_attributes(attribute_multipliers)
+
+        # Corrects weights to existing_paths
         if existing_paths is not None:
             existing_path_multiplier = kwargs.get("existing_path_multiplier") or 1
             existing_path_radius = kwargs.get("existing_path_radius") or 0
@@ -132,8 +144,8 @@ class Grid:
                     existing_paths, existing_path_multiplier, existing_path_radius
                 )
 
-        # Queue of (cost with heuristic, tile)
-        to_visit = PriorityQueue()
+        # Initialisation of A*
+        to_visit = PriorityQueue()  # to_visit is a queue of (cost with heuristic, tile)
         from_tile.cost = from_tile.weight
         from_tile.path_length = 0
         to_visit.put(
@@ -143,46 +155,76 @@ class Grid:
             )
         )
 
-        while True:
-            if len(to_visit.queue) == 0:
-                return None
-
+        # Main A* loop
+        while len(to_visit.queue) > 0:
+            # Visit next tile
             s_cost, s_tile = to_visit.get()
             if s_tile.visited or (
                 max_length is not None and s_tile.path_length >= max_length
             ):
                 continue
+
             if s_tile.pos == to_pos:
+                # We found the shortest path
                 return self.path_to(s_tile.pos)
+
             s_tile.visit()
 
+            # Discover neighbours
             neighbours = self._neighbours_of(s_tile)
             for c_tile in neighbours:
+                # Skip neighbour if already visited
+                if c_tile.visited:
+                    continue
+
+                # Calculate cost of neighbour from this parent
                 dist = s_tile.pos.dist(c_tile.pos)
                 c_cost = s_cost + c_tile.weight + dist * path_cost
                 c_full_cost = c_cost + c_tile.heuristic(to_tile, self._heuristic_of)
-                if c_tile.visited:
-                    continue
+
+                # Check if this cost is lower than any previous costs (skip neighbour if not)
                 if c_tile.discovered:
                     c_full_costs = [
                         cost for (cost, tile) in to_visit.queue if tile == c_tile
                     ]
                     if c_full_cost >= min(c_full_costs):
                         continue
+
+                # Discover neighbour
                 c_tile.discover()
                 c_tile.parent = s_tile
                 c_tile.cost = c_cost
                 c_tile.path_length = s_tile.path_length + dist
                 to_visit.put((c_full_cost, c_tile))
 
+        # No path exists
+        return None
+
     def path_to_string(self, path: List[Point]) -> str:
         """Format a path into a human-readable string."""
         return " -> ".join([f"{pos.x},{pos.y}" for pos in path])
 
+    def _correct_weights_to_attributes(
+        self, attribute_multipliers: Dict[TileAttribute, float]
+    ) -> None:
+        for attribute in TileAttribute:
+            if attribute_multipliers[attribute] is None:
+                attribute_multipliers[attribute] = 1
+
+        for row in self._tiles:
+            for tile in row:
+                if not tile.registered:
+                    continue
+                attributes = tile.data.get_attributes()
+                for attribute in attributes:
+                    tile.weight = tile.weight * attribute_multipliers[attribute]
+
     def _correct_weights_to_paths(
         self, paths: List[List[Point]], multiplier: int, radius: int
     ) -> None:
-        to_visit = [(pos, 0) for path in paths for pos in path]
+        to_visit = [
+            (pos, 0) for path in paths for pos in path if self._tile_at(pos).registered
+        ]
         for pos, _ in to_visit:
             self._tile_at(pos).visit()
 
