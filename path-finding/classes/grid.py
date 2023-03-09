@@ -6,6 +6,7 @@ from .point import Point
 from .rect import Rect
 from .tile import Tile
 from .tile_data import TileData
+from ..helpers import lerp
 
 
 class Grid:
@@ -29,21 +30,36 @@ class Grid:
     def dimensions(self) -> Rect:
         """Get the dimensions of the grid."""
         return self._dimensions
+       
+    def _tile_at(self, pos: Point) -> Tile:
+        """Get Tile in grid given Point."""
+        return self._tiles[pos.x, pos.y]
+    
+    def tile_data_at(self, pos: Point) -> Optional[TileData]:
+        """Get TileData in grid given Point."""
+        return self._tile_at(pos).data
+ 
 
     def register_tile_at(self, pos: Point, data: TileData) -> None:
         """Register the tile with the given tile data."""
-        self._tiles[pos.x, pos.y].register(data)
+        self._tile_at(pos).register(data)
 
     def deregister_tile_at(self, pos: Point) -> None:
         """Deregister the tile by removing its tile data."""
-        self._tiles[pos.x, pos.y].deregister()
+        self._tile_at(pos).deregister()
 
     def reset(self) -> None:
         """Reset the grid, so it can be used in another path finding computation."""
-        for row in self.tiles:
+        for row in self._tiles:
             for tile in row:
                 tile.reset()
         self._path_finding_has_run = False
+
+    def _undiscover_all(self) -> None:
+        # Reset all tiles' visited states to Undiscovered.
+        for row in self._tiles:
+            for tile in row:
+                tile.undiscover()
 
     def _neighbours_of(self, tile: Tile) -> List[Tile]:
         # Get the up to 8 neighbours of the given tile.
@@ -64,14 +80,14 @@ class Grid:
         # Uses the given end tile for A* to calculate the heuristic with.
         return tile.pos.dist(to_tile.pos)
 
-    def path_to(self, pos: Point) -> [Point]:
+    def path_to(self, pos: Point) -> List[Point]:
         """
         Return the path from the starting point to the given point.
         Only valid if A* has already been run on the grid.
         """
         if not self._path_finding_has_run:
             raise Exception("Must run A* before getting a tile's path")
-        return self._path_to_rec(self._tiles[pos.x, pos.y], [])
+        return self._path_to_rec(self._tile_at(pos), [])
 
     def _path_to_rec(self, tile: Tile, path: List[Point] = []) -> List[Point]:
         # Recursive helper function for path, calculating a tile's path
@@ -91,16 +107,22 @@ class Grid:
         Optional arguments:
         max_length: float -- the maximum length of the path, default None
         path_cost: float -- the base cost of the path per length unit, default 0
+        existing_routes: List[List[Point]] -- existing paths that should be weighted more
+        existing_route_multiplier: float -- how much more existing paths should be weighted more (diminishes linearly with distance)
+        existing_route_radius: float -- how far the existing routes stretch for purpose of weight multiplication
         """
         max_length = kwargs.get("max_length")
         path_cost = kwargs.get("path_cost") or 0
-        from_tile = self._tiles[from_pos.x, from_pos.y]
-        to_tile = self._tiles[to_pos.x, to_pos.y]
+        existing_routes = kwargs.get("existing_routes")
+        from_tile = self._tile_at(from_pos)
+        to_tile = self._tile_at(to_pos)
 
         if self._path_finding_has_run:
             self.reset()
-        else:
-            self._path_finding_has_run = True
+        self._path_finding_has_run = True
+
+        if existing_routes is not None and len(existing_routes) > 0:
+            self._correct_weights_to_paths(existing_routes)
 
         # Queue of (cost with heuristic, tile)
         to_visit = PriorityQueue()
@@ -144,3 +166,21 @@ class Grid:
                 c_tile.cost = c_cost
                 c_tile.path_length = s_tile.path_length + dist
                 to_visit.put((c_full_cost, c_tile))
+    
+    def _correct_weights_to_paths(self, routes: List[List[Point]], radius: int, multiplier: int) -> None:
+        to_visit = [(p,0) for p in route for route in routes]
+        for pos, _ in to_visit:
+            self.tile_at(pos).visit()
+
+        while len(to_visit) >0:
+            pos, dist = to_visit.pop()
+            tile = self.tile_at(pos)
+            tile.weight = tile.data.weight * lerp(multiplier, 1, dist / radius)
+            if dist >= radius:
+                continue
+            neighbours = [n for n in self._neighbours_of(tile) if not n.visited()]
+            for neighbour in neighbours:
+                neighbour.visit()
+            to_visit.append([(n, dist+1) for n in neighbours])
+
+        self._undiscover_all()

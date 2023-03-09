@@ -14,3 +14,8 @@ class TileData:
     def weight(self) -> float:
         """Get the tile's base cost."""
         return self._weight
+
+    @weight.setter
+    def weight(self, value: float) -> None:
+        """Set the tile's base cost."""
+        self._weight = value

@@ -10,15 +10,17 @@ class Tile:
 
     _pos: Point
     _data: Optional[TileData]
+    _weight: Optional[float]
     _visit_state: VisitState
     _parent: Optional["Tile"]
     _cost: Optional[float]
     _heuristic: Optional[float]
     _path_length: Optional[float]
-
+    
     def __init__(self, pos: Point):
         self._pos = pos
         self._data = None
+        self._weight = None
         self.reset()
 
     @property
@@ -39,10 +41,28 @@ class Tile:
     def register(self, data: TileData) -> None:
         """Register the tile with the given tile data."""
         self._data = data
+        self._weight = data.weight
 
     def deregister(self) -> None:
         """Deregister the tile by removing its tile data."""
         self._data = None
+        self._weight = None
+
+    @property
+    def weight(self) -> Optional[float]:
+        """Get the tile's corrected weight."""
+        return self._weight
+
+    @weight.setter
+    def weight(self, value: float) -> None:
+        """
+        Set the tile's corrected weight.
+        
+        May only be called if the tile is registered.
+        """
+        if not self.registered():
+            raise Exception("Cannot update weight for deregistered tile")
+        self._weight = value
 
     @property
     def visited(self) -> bool:
@@ -53,6 +73,7 @@ class Tile:
     def discovered(self) -> bool:
         """Check if the tile has been discovered (or even visited) during path finding."""
         return self._visit_state != VisitState.Undiscovered
+    
 
     def visit(self) -> None:
         """Upgrade the tile to be visited."""
@@ -62,6 +83,10 @@ class Tile:
         """Upgrade the tile to be discovered."""
         if not self.visited:
             self._visit_state = VisitState.Discovered
+
+    def undiscover(self) -> None:
+        """Downgrade the tile to be undiscovered."""
+        self._visit_state = VisitState.Undiscovered
 
     @property
     def parent(self) -> Optional["Tile"]:
@@ -110,6 +135,9 @@ class Tile:
         self._cost = None
         self._heuristic = None
         self._path_length = None
+
+    def __lt__(self, other):
+        return True
 
     def __str__(self):
         return str(self.pos)

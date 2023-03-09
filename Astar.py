@@ -39,15 +39,18 @@ class Tile:
 
 
 class Grid:
-    def __init__(self,width: int, height:int, lengthcost: int) -> None:
+    #Lengthcost: Int -> Float
+    def __init__(self,width: int, height:int, lengthcost) -> None:
         self.tiles = np.array([[Tile((i==j)*555, Point(i,j)) for i in range(width)] for j in range(height)])
         self.width = width
         self.height = height
         self.lengthcost = lengthcost #Scalar multiplied by length to increase cost for longer cables
         pass
+    
+    def lengthcost(self, l:int) -> float:
+        return self.lengthcost(l)
+    
 
-    
-    
     
 def distsq(p1: Point, p2: Point) -> int:
     return (p1.x-p2.x)**2 + (p1.y-p2.y)**2
@@ -81,11 +84,11 @@ def Astar(grid: Grid, start: Tile, end: Tile, maxLength: int):
         for c_tile in new_tiles:
             if not c_tile.visited and c_tile not in [y for (x,y,z) in to_visit.queue]:
                 c_tile.parent = s_tile
-                to_visit.put((c_tile.weight+ c_tile.h(end)+(length+1)*grid.lengthcost, c_tile, length +1))
+                to_visit.put((c_tile.weight+ c_tile.h(end)+grid.lengthcost(length+1), c_tile, length +1))
             elif c_tile in to_visit.queue:
                 if c_tile.h(end) < min([x[0] for x in to_visit.queue if x[1] == c_tile]):
                     c_tile.parent = s_tile
-                    to_visit.put((min([x[0] for x in to_visit.queue if x[1] == c_tile]) + grid.lengthcost, c_tile, length +1))
+                    to_visit.put((min([x[0] for x in to_visit.queue if x[1] == c_tile]) + grid.lengthcost(length+1)-grid.lengthcost(length), c_tile, length +1))
     
     return
 
