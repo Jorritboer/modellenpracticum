@@ -1,6 +1,6 @@
 from random import randint
 
-from .classes import Grid, Point, Rect, TileData
+from .classes import Grid, Point, Rect, TileAttribute, TileData
 
 
 def main():
@@ -15,7 +15,9 @@ def main():
     grid.register_tile_at(Point(4, 0), TileData(weight=2))
     grid.register_tile_at(Point(4, 1), TileData(weight=2))
     grid.register_tile_at(Point(4, 2), TileData(weight=2))
-    grid.register_tile_at(Point(4, 3), TileData(weight=2))
+    grid.register_tile_at(
+        Point(4, 3), TileData(weight=2, attributes=[TileAttribute.Road])
+    )
     grid.register_tile_at(Point(4, 4), TileData(weight=2))
 
     grid.register_tile_at(Point(2, 1), TileData(weight=1))
