@@ -1,13 +1,15 @@
 import subprocess
 from osgeo import gdal, gdalconst
+import argparse
+import os
 
 RESOLUTION = 1.0  # meter
 
 
-def rasterize(layer: str):
-    gml_filename = f"extract/{layer}.gml"
-    gml_ogr2ogr_filename = f"{layer}_ogr2ogr.gml"
-    tiff_filename = f"{layer}.tiff"
+def rasterize(extract: str, output: str, layer: str):
+    gml_filename = f"{extract}/{layer}.gml"
+    gml_ogr2ogr_filename = f"{output}/{layer}_ogr2ogr.gml"
+    tiff_filename = f"{output}/{layer}.tiff"
 
     print(f"Converting {gml_filename} to {gml_ogr2ogr_filename}...")
 
@@ -67,5 +69,17 @@ layers = [
     "bgt_weginrichtingselement",
 ]
 
+parser = argparse.ArgumentParser(
+    prog="rasterize.py", description="Rasterize BGT GML files"
+)
+parser.add_argument("extract", help="Path to unzipped BGT extract")
+parser.add_argument("output", help="Path to output directory")
+args = parser.parse_args()
+
+try:
+    os.mkdir(args.output)
+except FileExistsError:
+    pass
+
 for layer in layers:
-    rasterize(layer)
+    rasterize(args.extract, args.output, layer)
