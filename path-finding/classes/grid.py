@@ -32,7 +32,7 @@ class Grid:
         return self._dimensions
 
     def _tile_at(self, pos: Point) -> Tile:
-        """Get Tile in grid given Point."""
+        # Get Tile in grid given Point.
         return self._tiles[pos.x, pos.y]
 
     def tile_data_at(self, pos: Point) -> Optional[TileData]:
@@ -106,13 +106,13 @@ class Grid:
         Optional arguments:
         max_length: float -- the maximum length of the path, default None
         path_cost: float -- the base cost of the path per length unit, default 0
-        existing_routes: List[List[Point]] -- existing paths that should be weighted more
-        existing_route_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance)
-        existing_route_radius: int -- how many tiles the existing routes stretch for purpose of weight multiplication
+        existing_paths: List[List[Point]] -- existing paths that should be weighted more
+        existing_path_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance)
+        existing_path_radius: int -- how many tiles the existing paths stretch for purpose of weight multiplication
         """
         max_length = kwargs.get("max_length")
         path_cost = kwargs.get("path_cost") or 0
-        existing_routes = kwargs.get("existing_routes")
+        existing_paths = kwargs.get("existing_paths")
         from_tile = self._tile_at(from_pos)
         to_tile = self._tile_at(to_pos)
 
@@ -120,16 +120,16 @@ class Grid:
             self.reset()
         self._path_finding_has_run = True
 
-        if existing_routes is not None:
-            existing_route_multiplier = kwargs.get("existing_route_multiplier") or 1
-            existing_route_radius = kwargs.get("existing_route_radius") or 0
-            if existing_route_multiplier < 1:
+        if existing_paths is not None:
+            existing_path_multiplier = kwargs.get("existing_path_multiplier") or 1
+            existing_path_radius = kwargs.get("existing_path_radius") or 0
+            if existing_path_multiplier < 1:
                 raise Exception(
-                    "An existing route multiplier of less than 1 makes no sense"
+                    "An existing path multiplier of less than 1 makes no sense"
                 )
-            if existing_route_multiplier > 1 and len(existing_routes) > 0:
+            if existing_path_multiplier > 1 and len(existing_paths) > 0:
                 self._correct_weights_to_paths(
-                    existing_routes, existing_route_multiplier, existing_route_radius
+                    existing_paths, existing_path_multiplier, existing_path_radius
                 )
 
         # Queue of (cost with heuristic, tile)
@@ -180,21 +180,21 @@ class Grid:
         return " -> ".join([f"{pos.x},{pos.y}" for pos in path])
 
     def _correct_weights_to_paths(
-        self, routes: List[List[Point]], multiplier: int, radius: int
+        self, paths: List[List[Point]], multiplier: int, radius: int
     ) -> None:
-        to_visit = [((p, 0) for p in route) for route in routes]
+        to_visit = [(pos, 0) for path in paths for pos in path]
         for pos, _ in to_visit:
-            self.tile_at(pos).visit()
+            self._tile_at(pos).visit()
 
         while len(to_visit) > 0:
-            pos, dist = to_visit.pop()
-            tile = self.tile_at(pos)
+            pos, dist = to_visit.pop(0)
+            tile = self._tile_at(pos)
             tile.weight = tile.data.weight * lerp(multiplier, 1, dist / radius)
             if dist >= radius:
                 continue
-            neighbours = [n for n in self._neighbours_of(tile) if not n.visited()]
+            neighbours = [n for n in self._neighbours_of(tile) if not n.visited]
             for neighbour in neighbours:
                 neighbour.visit()
-            to_visit.append([(n, dist + 1) for n in neighbours])
+            to_visit.extend([(n.pos, dist + 1) for n in neighbours])
 
         self._undiscover_all()

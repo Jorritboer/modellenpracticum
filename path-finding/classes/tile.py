@@ -16,7 +16,7 @@ class Tile:
     _cost: Optional[float]
     _heuristic: Optional[float]
     _path_length: Optional[float]
-    
+
     def __init__(self, pos: Point):
         self._pos = pos
         self._data = None
@@ -25,8 +25,8 @@ class Tile:
 
     @property
     def pos(self) -> Point:
-        """Get the tile's position."""
-        return self._pos
+        """Get (a copy of) the tile's position."""
+        return Point(self._pos.x, self._pos.y)
 
     @property
     def data(self) -> Optional[TileData]:
@@ -57,10 +57,10 @@ class Tile:
     def weight(self, value: float) -> None:
         """
         Set the tile's corrected weight.
-        
+
         May only be called if the tile is registered.
         """
-        if not self.registered():
+        if not self.registered:
             raise Exception("Cannot update weight for deregistered tile")
         self._weight = value
 
@@ -73,7 +73,6 @@ class Tile:
     def discovered(self) -> bool:
         """Check if the tile has been discovered (or even visited) during path finding."""
         return self._visit_state != VisitState.Undiscovered
-    
 
     def visit(self) -> None:
         """Upgrade the tile to be visited."""
