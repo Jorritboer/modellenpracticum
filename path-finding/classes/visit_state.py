@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class VisitState(Enum):
-    Undiscovered = "Undiscovered"
-    Discovered = "Discovered"
-    Visited = "Visited"
+class VisitState(IntEnum):
+    Undiscovered = 0
+    Discovered = 1
+    Visited = 2

@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum
 
 
 # Values should be ints for efficient lookup in sets
-class TileAttribute(Enum):
+class TileAttribute(IntEnum):
     Road = 0
     Water = 1
