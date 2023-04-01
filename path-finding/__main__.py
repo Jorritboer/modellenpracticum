@@ -109,6 +109,40 @@ def main():
         )
     )
 
+    # Test 5
+    print("\nRandom 256x256 path, discouraging diagonal with previous path")
+    grid = Grid(Rect(256, 256))
+    for i in range(256):
+        for j in range(256):
+            grid.register_tile_at(
+                Point(i, j), TileData(weight=500 if i == j else randint(0, 50))
+            )
+    first_path = grid.find_path(Point(0, 0), Point(255, 255))
+    print(grid.path_to_string(first_path))
+
+    # Test 6
+    print("\nRandom 512x512 path, discouraging diagonal with previous path")
+    grid = Grid(Rect(512, 512))
+    for i in range(512):
+        for j in range(512):
+            grid.register_tile_at(
+                Point(i, j), TileData(weight=500 if i == j else randint(0, 50))
+            )
+    first_path = grid.find_path(Point(0, 0), Point(511, 511))
+    print(grid.path_to_string(first_path))
+
+    # Test 7
+    print("\nRandom 1024x1024 path, discouraging diagonal with previous path")
+    grid = Grid(Rect(1024, 1024))
+    for i in range(1024):
+        for j in range(1024):
+            grid.register_tile_at(
+                Point(i, j), TileData(weight=500 if i == j else randint(0, 50))
+            )
+    first_path = grid.find_path(Point(0, 0), Point(1023, 1023))
+    print(grid.path_to_string(first_path))
+
+
     
     
 
