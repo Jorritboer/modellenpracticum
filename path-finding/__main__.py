@@ -1,7 +1,7 @@
 from random import randint
 
 from .classes import Grid, Point, Rect, TileData
-
+from .classes.visualizer import Visualizer
 
 def main():
     # Test 1
@@ -36,25 +36,26 @@ def main():
     for i in range(100):
         for j in range(100):
             grid.register_tile_at(
-                Point(i, j), TileData(weight=500 if i == j else randint(0, 50))
+                Point(i, j), TileData(weight=5000 if i == j else randint(0, 50))
             )
     first_path = grid.find_path(Point(0, 0), Point(99, 99))
     print(grid.path_to_string(first_path))
-
+    print(first_path)
     # Test 3
     print("\nRandom 100x100 path, discouraging diagonal with previous path")
-    print(
-        grid.path_to_string(
-            grid.find_path(
+    second_path = grid.find_path(
                 Point(0, 0),
                 Point(99, 99),
                 existing_paths=[first_path],
-                existing_path_multiplier=69,
-                existing_path_radius=5,
+                existing_path_multiplier=600,
+                existing_path_radius=2,
             )
-        )
+    print(
+        grid.path_to_string(second_path)
     )
-
+    visualizer1 = Visualizer(first_path, (10, 0.5, 0, 10, 0, 0.5))
+    visualizer2 = Visualizer(second_path, (10, 0.5, 0, 10, 0, 0.5))
+    visualizer1.show()
 
 if __name__ == "__main__":
     main()
