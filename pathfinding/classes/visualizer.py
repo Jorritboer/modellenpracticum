@@ -1,10 +1,12 @@
+import matplotlib.pyplot as plt
 
 class Visualizer:
+    """Visualization purposes of found path"""
     #path: found path
     #geotransform: (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size)
-    def __init__(self, path) -> None:
-        self.path = path
-        self.geotransform:list
+    def __init__(self, path, geotransform) -> None:
+        self.path = [(p._x, p._y) for p in path]
+        self.geotransform = geotransform
         pass
 
     def array_index_to_coordinates(
@@ -57,7 +59,12 @@ class Visualizer:
 
     def getGEOJSON(self):
         f = open("path.json", "a")
-        f.write( "{\n \"TYPE\": \"LineString\",\"coordinates\": [")
-        for coord in self.array_index_to_coordinates(self.path,self.geotransform):
-            f.write("  ",coord)        
-        f.write(" ]}")
+        f.write( "{\n \"TYPE\": \"LineString\",\n \"coordinates\": [\n")
+        for coord in self.array_index_to_coordinates(self.path,self.geotransform)[:-1]:
+            f.write("  ["+str(coord[0])+","+str(coord[1])+"], \n") 
+        f.write("  ["+str(coord[0])+","+str(coord[1])+"]\n")        
+        f.write(" ]\n}")
+    
+    def show(self, colour="pink"):
+        plt.plot([x[0] for x in self.path], [x[1] for x in self.array_index_to_coordinates(self.path,self.geotransform)], linestyle = 'dotted', color=colour)
+        plt.show()
