@@ -1,0 +1,5 @@
+- linearize:
+ogr2ogr bgt_wegdeel.gpkg bgt_wegdeel.gml -nlt CONVERT_TO_LINEAR
+
+- rasterize:
+gdal_rasterize -a_srs EPSG:28992 -burn 255 -co COMPRESS=LZW -co TILED=YES -ot Byte -tr 0.5 0.5 -at bgt_wegdeel.gpkg wegdeel.tiff
