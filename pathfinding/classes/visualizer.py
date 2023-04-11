@@ -1,11 +1,15 @@
 import matplotlib.pyplot as plt
+from random import randint
 
 class Visualizer:
     """Visualization purposes of found path"""
     #path: found path
     #geotransform: (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size)
-    def __init__(self, path, geotransform = (0,0.5,0,0,0,0.5)) -> None:
-        self.path = [(p[0], p[1]) for p in path]
+    def __init__(self, paths, geotransform = (0,0.5,0,0,0,0.5)) -> None:
+        try:
+            self.paths = [[(p[0], p[1]) for p in path] for path in paths]
+        except:
+            print(paths)
         self.geotransform = geotransform
         pass
 
@@ -59,12 +63,26 @@ class Visualizer:
 
     def getGEOJSON(self):
         f = open("path.json", "a")
-        f.write( "{ \"type\": \"Feature\",\n \"geometry\": {\n  \"type\": \"LineString\",\n  \"coordinates\": [")
-        for coord in self.array_index_to_coordinates(self.path,self.geotransform)[:-1]:
+        f.write("{ \"type\": \"FeatureCollection\",\n \"features\": [")
+        for path in self.paths[:-1]:
+            if len(self.paths)==1:
+                continue
+            f.write( "{ \"type\": \"Feature\",\n \"geometry\":") 
+            f.write("{\n  \"type\": \"LineString\",\n  \"coordinates\": [")
+            for coord in self.array_index_to_coordinates(path,self.geotransform)[:-1]:
+                f.write("  ["+str(coord[0])+","+str(coord[1])+"], \n") 
+            f.write("  ["+str(coord[0])+","+str(coord[1])+"]\n")        
+            f.write(" ]\n  }\n},")
+        path = self.paths[-1]
+        f.write( "{ \"type\": \"Feature\",\n \"geometry\":") 
+        f.write("{\n  \"type\": \"LineString\",\n  \"coordinates\": [")
+        for coord in self.array_index_to_coordinates(path,self.geotransform)[:-1]:
             f.write("  ["+str(coord[0])+","+str(coord[1])+"], \n") 
         f.write("  ["+str(coord[0])+","+str(coord[1])+"]\n")        
         f.write(" ]\n  }\n}")
-    
-    def show(self, colour="pink"):
-        plt.plot([x[0] for x in self.path], [x[1] for x in self.array_index_to_coordinates(self.path,self.geotransform)], linestyle = 'dotted', color=colour)
+        f.write("  ]\n}")
+    def show(self):
+        for path in self.paths:
+            colour = (randint(0,255), randint(0,255), randint(0,255))
+            plt.plot([x[0] for x in path], [x[1] for x in self.array_index_to_coordinates(path,self.geotransform)], linestyle = 'dotted', color=colour)
         plt.show()
