@@ -63,18 +63,18 @@ class Visualizer:
 
 
     def getGEOJSON(self, name: str = "path"):
-        f = open(name+".json", "a")
-        pathfeatures = [ {"type": "Feature",
-                         "geometry":{
-                         "type": "LineString",
-                         "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths]
+        with open(name+".json", "a") as f:
+            pathfeatures = [ {"type": "Feature",
+                             "geometry":{
+                             "type": "LineString",
+                             "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths]
 
-        dictionary = {
-            "type": "FeatureCollection",
-            "features": pathfeatures
-        }
-        print(dictionary)
-        f.write(json.dumps(dictionary, indent=0))
+            dictionary = {
+                "type": "FeatureCollection",
+                "features": pathfeatures
+            }
+            print(dictionary)
+            json.dump(dictionary, f, indent=0)
 
 
         
