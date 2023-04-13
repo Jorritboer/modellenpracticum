@@ -112,7 +112,12 @@ class Grid:
         if self.get_attribute(pos, attr) != value:
             self._attributes[pos] ^= 1 << attr
 
-    def register_tile_at(self, pos: Tuple[int, int], weight: float = 0, attributes: List[TileAttribute] = []) -> None:
+    def register_tile_at(
+        self,
+        pos: Tuple[int, int],
+        weight: float = 0,
+        attributes: List[TileAttribute] = [],
+    ) -> None:
         """Register the tile with the given tile data."""
         self.set_registered(pos, True)
         self.set_base_weight(pos, weight)
@@ -148,11 +153,11 @@ class Grid:
         ]
 
     def _heuristic_of(
-        self, from_pos: Tuple[int, int], to_pos: Tuple[int, int]
+        self, from_pos: Tuple[int, int], to_pos: Tuple[int, int], path_cost: float
     ) -> float:
         # Get the A* heuristic for a tile.
         # Uses the given end tile for A* to calculate the heuristic with.
-        return dist(from_pos, to_pos)
+        return path_cost * dist(from_pos, to_pos)
 
     def path_to(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         """
@@ -215,12 +220,16 @@ class Grid:
                 )
 
         # Initialisation of A*
-        to_visit = PriorityQueue()  # to_visit is a queue of (cost with heuristic, tile)
-        self.set_cost(from_pos, self.get_weight(from_pos))
+        to_visit = (
+            PriorityQueue()
+        )  # to_visit is a queue of (cost with heuristic, cost without heuristic, tile)
+        self.set_cost(from_pos, 0)
         self.set_path_length(from_pos, 0)
         to_visit.put(
             (
-                self.get_cost(from_pos) + self._heuristic_of(from_pos, to_pos),
+                self.get_cost(from_pos)
+                + self._heuristic_of(from_pos, to_pos, path_cost),
+                self.get_cost(from_pos),
                 from_pos,
             )
         )
@@ -228,7 +237,7 @@ class Grid:
         # Main A* loop
         while len(to_visit.queue) > 0:
             # Visit next tile
-            s_cost, s_pos = to_visit.get()
+            s_full_cost, s_cost, s_pos = to_visit.get()
             if self.get_visit_state(s_pos) == VisitState.Visited or (
                 max_length is not None and self.get_path_length(s_pos) >= max_length
             ):
@@ -249,13 +258,19 @@ class Grid:
 
                 # Calculate cost of neighbour from this parent
                 d = dist(s_pos, c_pos)
-                c_cost = s_cost + self.get_weight(c_pos) + d * path_cost
-                c_full_cost = c_cost + self._heuristic_of(c_pos, to_pos)
+                c_cost = (
+                    s_cost
+                    + (self.get_weight(c_pos) + self.get_weight(s_pos)) / 2
+                    + d * path_cost
+                )
+                c_full_cost = c_cost + self._heuristic_of(c_pos, to_pos, path_cost)
 
                 # Check if this cost is lower than any previous costs (skip neighbour if not)
                 if self.get_visit_state(c_pos) == VisitState.Discovered:
                     c_full_costs = [
-                        cost for (cost, pos) in to_visit.queue if pos == c_pos
+                        full_cost
+                        for (full_cost, cost, pos) in to_visit.queue
+                        if pos == c_pos
                     ]
                     if c_full_cost >= min(c_full_costs):
                         continue
@@ -265,7 +280,7 @@ class Grid:
                 self.set_parent(c_pos, s_pos)
                 self.set_cost(c_pos, c_cost)
                 self.set_path_length(c_pos, self.get_path_length(s_pos) + d)
-                to_visit.put((c_full_cost, c_pos))
+                to_visit.put((c_full_cost, c_cost, c_pos))
 
         # No path exists
         return None
@@ -279,7 +294,7 @@ class Grid:
     ) -> None:
         for x in range(self.dimensions.width):
             for y in range(self.dimensions.height):
-                for (attr, multiplier) in attribute_multipliers.items():
+                for attr, multiplier in attribute_multipliers.items():
                     if self.get_attribute((x, y), attr):
                         self.set_weight((x, y), self.get_weight((x, y)) * multiplier)
 
@@ -294,10 +309,16 @@ class Grid:
 
         while len(to_visit) > 0:
             pos, dist = to_visit.pop(0)
-            self.set_weight(pos, self.get_base_weight(pos) * lerp(multiplier, 1, dist / radius))
+            self.set_weight(
+                pos, self.get_base_weight(pos) * lerp(multiplier, 1, dist / radius)
+            )
             if dist >= radius:
                 continue
-            neighbours = [n for n in self._neighbours_of(pos) if not self.get_visit_state(pos) == VisitState.Visited]
+            neighbours = [
+                n
+                for n in self._neighbours_of(pos)
+                if not self.get_visit_state(pos) == VisitState.Visited
+            ]
             for neighbour in neighbours:
                 self.set_visit_state(neighbour, VisitState.Visited)
             to_visit.extend([(n, dist + 1) for n in neighbours])
