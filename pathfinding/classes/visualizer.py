@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from random import randint
+import json
 
 class Visualizer:
     """Visualization purposes of found path"""
@@ -61,26 +62,22 @@ class Visualizer:
         return real_coordinates
 
 
-    def getGEOJSON(self):
-        f = open("path.json", "a")
-        f.write("{ \"type\": \"FeatureCollection\",\n \"features\": [")
-        for path in self.paths[:-1]:
-            if len(self.paths)==1:
-                continue
-            f.write( "{ \"type\": \"Feature\",\n \"geometry\":") 
-            f.write("{\n  \"type\": \"LineString\",\n  \"coordinates\": [")
-            for coord in self.array_index_to_coordinates(path,self.geotransform)[:-1]:
-                f.write("  ["+str(coord[0])+","+str(coord[1])+"], \n") 
-            f.write("  ["+str(coord[0])+","+str(coord[1])+"]\n")        
-            f.write(" ]\n  }\n},")
-        path = self.paths[-1]
-        f.write( "{ \"type\": \"Feature\",\n \"geometry\":") 
-        f.write("{\n  \"type\": \"LineString\",\n  \"coordinates\": [")
-        for coord in self.array_index_to_coordinates(path,self.geotransform)[:-1]:
-            f.write("  ["+str(coord[0])+","+str(coord[1])+"], \n") 
-        f.write("  ["+str(coord[0])+","+str(coord[1])+"]\n")        
-        f.write(" ]\n  }\n}")
-        f.write("  ]\n}")
+    def getGEOJSON(self, name: str = "path"):
+        f = open(name+".json", "a")
+        pathfeatures = [ {"type": "Feature",
+                         "geometry":{
+                         "type": "LineString",
+                         "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths]
+
+        dictionary = {
+            "type": "FeatureCollection",
+            "features": pathfeatures
+        }
+        print(dictionary)
+        f.write(json.dumps(dictionary, indent=0))
+
+
+        
     def show(self):
         for path in self.paths:
             colour = (randint(0,255), randint(0,255), randint(0,255))
