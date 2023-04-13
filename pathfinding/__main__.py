@@ -2,6 +2,7 @@ from random import randint
 
 from .classes import Grid, Rect, TileAttribute
 from .helpers import download_bgt_data, wkt_rect
+from .classes.visualizer import Visualizer
 
 
 def main():
@@ -101,7 +102,7 @@ def main():
                 (i, j), weight=500 if i == j else randint(0, 50)
             )
     first_path = grid.find_path((0, 0), (255, 255))
-    print(grid.path_to_string(first_path))
+    print(grid.path_to_string([first_path]))
 
     # Test 6
     print("\nRandom 512x512 path, discouraging diagonal with previous path")
@@ -112,8 +113,12 @@ def main():
                 (i, j), weight=500 if i == j else randint(0, 50)
             )
     first_path = grid.find_path((0, 0), (511, 511))
+    l = []
     print(grid.path_to_string(first_path))
 
+    visualizer = Visualizer([first_path])
+    visualizer.getGEOJSON()
+    
     # Test 7
     print("\nRandom 1024x1024 path, discouraging diagonal with previous path")
     grid = Grid(Rect(1024, 1024))
@@ -124,6 +129,7 @@ def main():
             )
     first_path = grid.find_path((0, 0), (1023, 1023))
     print(grid.path_to_string(first_path))
+    
 
 
 if __name__ == "__main__":

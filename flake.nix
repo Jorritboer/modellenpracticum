@@ -26,6 +26,8 @@
           pylint
           black
           geopandas
+          numpy
+          gdal
         ]))
       ];
     };
