@@ -13,16 +13,16 @@ def download_bgt_area(filename: str, area: str):
         "bak",
         "gebouwinstallatie",
         "kunstwerkdeel",
-        "onbegroeidterreindeel"
+        "onbegroeidterreindeel",
+        "begroeidterreindeel"
     ],
     "format": "citygml",
     "geofilter": area
     }
     
-    # Request data and receive request id
+    # Request data
     response = requests.post(url, headers=head, json=data)
     response_load = json.loads(response.text)
-    download_ID = response_load['downloadRequestId']
     
     # Check server status
     stat_link = "https://api.pdok.nl" + response_load['_links']['status']['href']
@@ -46,4 +46,19 @@ def download_bgt_area(filename: str, area: str):
     open(filename,'wb').write(dl_file.content)    
     return filename
 
-download_bgt_area("extract.zip", "POLYGON((155000 463000,155100 463000,155100 463100, 155000 463100, 155000 463000))")
+def download_bgt_from_rdc(filename: str, start: tuple[int, int], end: tuple[int, int]) :
+    # The proportion of extra distance we download around the points
+    extra_area = 0.1
+
+    # The distance between the points
+    horizontal_dist = abs(start[0]-end[0])
+    vertical_dist = abs(start[1]-end[1])
+
+    # The corners of the area we want to download
+    left = int(min(start[0], end[0])-horizontal_dist*extra_area)
+    right = int(max(start[0], end[0]) + horizontal_dist*extra_area)
+    up = int(max (start[1], end[1]) + vertical_dist*extra_area)
+    down = int(min(start[1], end[1]) - vertical_dist*extra_area)
+
+    area = "POLYGON((" + str(left) + " " + str(down) + "," + str(left) + " " + str(up) + "," + str(right) + " " + str(up) + "," + str(right) + " " + str(down) + "," + str(left) + " " + str(down) + "))"
+    return(download_bgt_area(filename, area))
