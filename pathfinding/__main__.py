@@ -1,11 +1,20 @@
 from random import randint
 
 from .classes import Grid, Rect, TileAttribute
+from .helpers import download_bgt_data, wkt_rect
 
 
 def main():
+    # Download bgt data
+    print("Downloading BGT data..")
+    success, err = download_bgt_data(wkt_rect((140100, 400000), (151000, 450000)))
+    if success:
+        print("Download successful")
+    else:
+        print(f"Download failed: {err}")
+
     # Test 1
-    print("Simple 5x5 path")
+    print("\nSimple 5x5 path")
 
     grid = Grid(Rect(5, 5))
     grid.register_tile_at((0, 0))

@@ -1,0 +1,1 @@
+BGT_DATA_PATH = '.bgt_data'
