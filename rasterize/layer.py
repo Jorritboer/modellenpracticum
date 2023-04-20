@@ -2,6 +2,7 @@ import subprocess
 import os
 from osgeo import gdal, gdalconst
 from typing import Optional, List, Tuple
+from pathfinding.classes.tile_attribute import TileAttribute
 
 RESOLUTION = 1.0  # meter
 
@@ -49,18 +50,37 @@ def rasterize(
     return output_filename
 
 
+class Feature:
+    name: str
+    where: Optional[str]
+    attribute: TileAttribute
+    weight: int
+
+    def __init__(
+        self,
+        name: str,
+        where: Optional[str],
+        attribute: TileAttribute,
+        weight: int,
+    ):
+        self.name = name
+        self.where = where
+        self.attribute = attribute
+        self.weight = weight
+
+
 class Layer:
     _gml_filename: str
     _layer_name: str
-    _features: List[Tuple[Optional[str], int]]
+    _features: List[Feature]
     _linearized: Optional[str] = None
-    _rasterized: Optional[List[str]] = None
+    _rasterized: Optional[List[Tuple[str, Feature]]] = None
 
     def __init__(
         self,
         gml_filename: str,
         layer_name: str,
-        features: List[Tuple[Optional[str], int]],
+        features: List[Feature],
     ):
         self._gml_filename = gml_filename
         self._layer_name = layer_name  # table name
@@ -90,21 +110,22 @@ class Layer:
 
     def rasterize(
         self, input_dir: Optional[str] = None, output_dir: Optional[str] = None
-    ) -> List[str]:
+    ) -> List[Tuple[str, Feature]]:
         if self._rasterized:
             return self._rasterized
 
         outputs = []
-        for feature_name, where, _ in self._features:
-            output_filename = f"{self._layer_name}_{feature_name}.tiff"
+        for feature in self._features:
+            output_filename = f"{self._layer_name}_{feature.name}.tiff"
             if output_dir:
                 output_filename = f"{output_dir}/{output_filename}"
 
             output = rasterize(
                 self.linearize(input_dir=input_dir, output_dir=output_dir),
                 output_filename,
-                where=where,
+                where=feature.where,
             )
-            outputs += [output]
+            outputs += [(output, feature)]
 
+        self._rasterized = outputs
         return self._rasterized
