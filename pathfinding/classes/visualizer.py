@@ -9,10 +9,7 @@ class Visualizer:
     #path: found path
     #geotransform: (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size)
     def __init__(self, paths, geotransform = (0,0.5,0,0,0,0.5)) -> None:
-        try:
-            self.paths = [[(p[0], p[1]) for p in path] for path in paths]
-        except:
-            print(paths)
+        self.paths = [[(p[0], p[1]) for p in path] for path in paths]
         self.geotransform = geotransform
         pass
 
@@ -65,7 +62,7 @@ class Visualizer:
 
 
     def getGEOJSON(self, name: str = "path"):
-        """Puts GEOJSON file with paths in .bgt_data folder"""
+        
         pathfeatures = [ {"type": "Feature",
                             "geometry":{
                             "type": "LineString",
