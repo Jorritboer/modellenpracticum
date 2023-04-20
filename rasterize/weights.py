@@ -4,12 +4,12 @@ from pathfinding.classes.tile_attribute import TileAttribute
 layers = [
     Layer(
         gml_filename="bgt_waterdeel.gml",
-        layer_name="Waterdeel",
+        layer_name="waterdeel",
         features=[Feature("water", None, TileAttribute.Waterdeel, 126)],
     ),
     Layer(
         gml_filename="bgt_ondersteunendwaterdeel.gml",
-        layer_name="OndersteunendWaterdeel",
+        layer_name="ondersteunendwaterdeel",
         # name is not 'oever_slootkant' for some reason
         # 2
         features=[
@@ -137,7 +137,7 @@ layers = [
     ),
     Layer(
         gml_filename="bgt_ondersteunendwegdeel.gml",
-        layer_name="AuxiliaryTrafficArea",
+        layer_name="ondersteunendwegdeel",
         features=[  # 7
             Feature(
                 "verkeerseiland",
@@ -182,7 +182,7 @@ layers = [
     ),
     Layer(
         gml_filename="bgt_onbegroeidterreindeel.gml",
-        layer_name="OnbegroeidTerreindeel",
+        layer_name="onbegroeidterreindeel",
         features=[  # 6
             Feature(
                 "zand",
@@ -329,7 +329,7 @@ layers = [
     ),
     Layer(
         gml_filename="bgt_vegetatieobject.gml",
-        layer_name="SolitaryVegetationObject",
+        layer_name="veetatieobject",
         features=[  # 3
             Feature(
                 "boom", "`plus-type` = 'boom'", TileAttribute.Vegetatieobject_Boom, 80
@@ -347,7 +347,7 @@ layers = [
     ),
     Layer(
         gml_filename="bgt_scheiding.gml",
-        layer_name="Scheiding",
+        layer_name="scheiding",
         features=[  # 7
             Feature("hek", "`bgt-type` = 'hek'", TileAttribute.Scheiding_Hek, 5),
             Feature(
@@ -381,6 +381,8 @@ layers = [
         ],
     ),
     Layer(
-        gml_filename="bgt_functioneelgebied.gml", layer_name="?", features=[]
+        gml_filename="bgt_functioneelgebied.gml",
+        layer_name="functioneelgebied",
+        features=[],
     ),  # cannot find layers
 ]
