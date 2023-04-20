@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from random import randint
 import json
+from ..constants import BGT_DATA_PATH 
+import os
 
 class Visualizer:
     """Visualization purposes of found path"""
@@ -63,17 +65,20 @@ class Visualizer:
 
 
     def getGEOJSON(self, name: str = "path"):
-        with open(name+".json", "a") as f:
-            pathfeatures = [ {"type": "Feature",
-                             "geometry":{
-                             "type": "LineString",
-                             "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths]
+        """Puts GEOJSON file with paths in .bgt_data folder"""
+        pathfeatures = [ {"type": "Feature",
+                            "geometry":{
+                            "type": "LineString",
+                            "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths if path is not None]
 
-            dictionary = {
-                "type": "FeatureCollection",
-                "features": pathfeatures
-            }
-            print(dictionary)
+        dictionary = {
+            "type": "FeatureCollection",
+            "features": pathfeatures
+        }
+        
+        if not os.path.exists(BGT_DATA_PATH):
+            os.makedirs(BGT_DATA_PATH)
+        with open(os.path.join(BGT_DATA_PATH, name+".json"), "a") as f:
             json.dump(dictionary, f, indent=0)
 
 
