@@ -114,13 +114,13 @@ class Grid:
     def register_tile_at(
         self,
         pos: Tuple[int, int],
-        weight: float = 0,
+        base_weight: float = 0,
         attributes: List[TileAttribute] = [],
     ) -> None:
         """Register the tile with the given tile data."""
         self.set_registered(pos, True)
-        self.set_base_weight(pos, weight)
-        self.set_weight(pos, weight)
+        self.set_base_weight(pos, base_weight)
+        self.set_weight(pos, base_weight)
         for attribute in attributes:
             self.set_attribute(pos, attribute, True)
 
@@ -177,7 +177,7 @@ class Grid:
         to_pos: Tuple[int, int],
         max_length=None,
         path_cost=0,
-        attribute_multipliers=None,
+        attribute_weights=None,
         existing_paths=None,
         existing_path_multiplier=1,
         existing_path_radius=0,
@@ -195,7 +195,7 @@ class Grid:
         existing_paths: List[List[Tuple[int, int]]] -- existing paths that should be weighted more, default None
         existing_path_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance), default 1
         existing_path_radius: int -- how many tiles the existing paths stretch for purpose of weight multiplication, default 0
-        attribute_multipliers: Dict[TileAttribute, float] -- weight multipliers for each TileAttribute, default 1
+        attribute_weights: Dict[TileAttribute, float] -- weights for each TileAttribute, default 1
         """
 
         # Cleanup to prepare for running the algorithm
@@ -204,8 +204,8 @@ class Grid:
         self._path_finding_has_run = True
 
         # Correct weights to attributes
-        if attribute_multipliers is not None:
-            self._correct_weights_to_attributes(attribute_multipliers)
+        if attribute_weights is not None:
+            self._init_weights_from_attributes(attribute_weights)
 
         # Corrects weights to existing_paths
         if existing_paths is not None:
@@ -288,14 +288,27 @@ class Grid:
         """Format a path into a human-readable string."""
         return " -> ".join([f"{pos[0]},{pos[1]}" for pos in path])
 
-    def _correct_weights_to_attributes(
-        self, attribute_multipliers: Dict[TileAttribute, float]
-    ) -> None:
+    def _weight_from_attributes(
+        self,
+        pos: Tuple[int, int],
+        base_weight: float,
+        attribute_weights: Dict[TileAttribute, float],
+    ) -> float:
+        weight = base_weight
+        for attribute, attribute_weight in attribute_weights.items():
+            if self.get_attribute(pos, attribute):
+                weight += attribute_weight
+        return weight
+
+    def _init_weights_from_attributes(self, attribute_weights: Dict[TileAttribute, float] = {}):
         for x in range(self.dimensions.width):
             for y in range(self.dimensions.height):
-                for attr, multiplier in attribute_multipliers.items():
-                    if self.get_attribute((x, y), attr):
-                        self.set_weight((x, y), self.get_weight((x, y)) * multiplier)
+                self.set_weight(
+                    (x, y),
+                    self._weight_from_attributes(
+                        (x, y), self.get_base_weight((x, y)), attribute_weights
+                    ),
+                )
 
     def _correct_weights_to_paths(
         self, paths: List[List[Tuple[int, int]]], multiplier: int, radius: int

@@ -149,13 +149,13 @@ layers = [
                 "berm",
                 "function = 'berm'",
                 TileAttribute.OndersteunendWegdeel_Berm,
-                1,
+                -10,
             ),
             Feature(
                 "groenvoorziening",
                 "surfaceMaterial = 'groenvoorziening'",
                 TileAttribute.OndersteunendWegdeel_Groenvoorziening,
-                1,
+                -10,
             ),
             Feature(
                 "half-verhard",
