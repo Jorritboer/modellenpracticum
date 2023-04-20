@@ -329,7 +329,7 @@ layers = [
     ),
     Layer(
         gml_filename="bgt_vegetatieobject.gml",
-        layer_name="veetatieobject",
+        layer_name="vegetatieobject",
         features=[  # 3
             Feature(
                 "boom", "`plus-type` = 'boom'", TileAttribute.Vegetatieobject_Boom, 80
