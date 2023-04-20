@@ -53,10 +53,11 @@ class Visualizer:
 
         real_coordinates = []
 
-        for y_index, x_index in array_index_to_transform:
+        for x_index, y_index in array_index_to_transform:
             x = upper_left_x + ((x_index * x_size) + (x_size / 2))
 
-            y = upper_left_y - abs(((y_index * y_size) + (y_size / 2)))
+            # y = upper_left_y - abs(((y_index * y_size) + (y_size / 2)))
+            y = upper_left_y + abs((((534 - y_index - 1) * y_size) + (y_size / 2)))
 
             real_coordinates.append((x, y))
 
@@ -75,6 +76,10 @@ class Visualizer:
                         )
                     ],
                 },
+                "style": {
+                    "fill": "blue",
+                    "stroke-width": "3",
+                },
             }
             for path in self.paths
             if path is not None
@@ -85,7 +90,7 @@ class Visualizer:
         if not os.path.exists(BGT_DATA_PATH):
             os.makedirs(BGT_DATA_PATH)
         with open(os.path.join(BGT_DATA_PATH, name + ".json"), "a") as f:
-            json.dump(dictionary, f, indent=0)
+            json.dump(dictionary, f, indent=4)
 
     def show(self):
         for path in self.paths:

@@ -141,12 +141,15 @@ layers = [
         features=[  # 7
             Feature(
                 "verkeerseiland",
-                "function = 'verkeerseiland",
+                "function = 'verkeerseiland'",
                 TileAttribute.OndersteunendWegdeel_Verkeerseiland,
                 10,
             ),
             Feature(
-                "berm", "function = 'berm", TileAttribute.OndersteunendWegdeel_Berm, -10
+                "berm",
+                "function = 'berm'",
+                TileAttribute.OndersteunendWegdeel_Berm,
+                -10,
             ),
             Feature(
                 "groenvoorziening",

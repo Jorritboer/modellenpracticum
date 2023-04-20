@@ -63,9 +63,9 @@ class Layer:
         if output_dir:
             output_filename = f"{output_dir}/{output_filename}"
 
-        if os.path.isfile(output_filename):
-            self._linearized = output_filename
-            return self._linearized
+        # if os.path.isfile(output_filename):
+        #     self._linearized = output_filename
+        #     return self._linearized
 
         self._linearized = linearize(wkt_geometry, input_filename, output_filename)
         return self._linearized
@@ -73,9 +73,11 @@ class Layer:
     def rasterize(
         self,
         wkt_geometry: str,
+        resolution: float,
         input_dir: Optional[str] = None,
         gpkg_dir: Optional[str] = None,
         output_dir: Optional[str] = None,
+        outputBounds: Optional[Tuple[float, float, float, float]] = None,
     ) -> List[Tuple[str, Feature]]:
         if self._rasterized:
             return self._rasterized
@@ -90,6 +92,8 @@ class Layer:
                 self.linearize(wkt_geometry, input_dir=input_dir, output_dir=gpkg_dir),
                 output_filename,
                 where=feature.where,
+                resolution=resolution,
+                outputBounds=outputBounds,
             )
             outputs += [(output, feature)]
 

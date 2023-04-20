@@ -20,6 +20,9 @@
         pkgs.qgis
         (python.withPackages (ps:
         with ps; [
+          requests
+          matplotlib
+          rasterio
           python-lsp-server
           autopep8
           flake8

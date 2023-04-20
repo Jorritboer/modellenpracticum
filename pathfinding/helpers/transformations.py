@@ -1,9 +1,10 @@
 import subprocess
 from osgeo import gdal, gdalconst
-from typing import Optional
+from typing import Optional, Tuple
 
 
 def linearize(wkt_geometry: str, input_filename: str, output_filename: str):
+    print(f"Linearizing {input_filename} to {output_filename}")
     subprocess.run(
         [
             "ogr2ogr",
@@ -25,7 +26,9 @@ def rasterize(
     output_filename: str,
     where: Optional[str] = None,
     resolution: float = 1.0,  # in meters
+    outputBounds: Optional[Tuple[float, float, float, float]] = None,
 ) -> str:
+    print(f"Rasterizing {input_filename} to {output_filename}")
     gdal.Rasterize(
         output_filename,
         input_filename,
@@ -37,6 +40,7 @@ def rasterize(
             xRes=resolution,
             yRes=resolution,
             where=where,
+            outputBounds=outputBounds,
         ),
     )
     return output_filename
