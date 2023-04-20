@@ -1,16 +1,15 @@
 import matplotlib.pyplot as plt
 from random import randint
 import json
+from ..constants import BGT_DATA_PATH 
+import os
 
 class Visualizer:
     """Visualization purposes of found path"""
     #path: found path
     #geotransform: (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size)
     def __init__(self, paths, geotransform = (0,0.5,0,0,0,0.5)) -> None:
-        try:
-            self.paths = [[(p[0], p[1]) for p in path] for path in paths]
-        except:
-            print(paths)
+        self.paths = [[(p[0], p[1]) for p in path] for path in paths]
         self.geotransform = geotransform
         pass
 
@@ -63,17 +62,20 @@ class Visualizer:
 
 
     def getGEOJSON(self, name: str = "path"):
-        with open(name+".json", "a") as f:
-            pathfeatures = [ {"type": "Feature",
-                             "geometry":{
-                             "type": "LineString",
-                             "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths]
+        
+        pathfeatures = [ {"type": "Feature",
+                            "geometry":{
+                            "type": "LineString",
+                            "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths if path is not None]
 
-            dictionary = {
-                "type": "FeatureCollection",
-                "features": pathfeatures
-            }
-            print(dictionary)
+        dictionary = {
+            "type": "FeatureCollection",
+            "features": pathfeatures
+        }
+        
+        if not os.path.exists(BGT_DATA_PATH):
+            os.makedirs(BGT_DATA_PATH)
+        with open(os.path.join(BGT_DATA_PATH, name+".json"), "a") as f:
             json.dump(dictionary, f, indent=0)
 
 
