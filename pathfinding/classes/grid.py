@@ -8,7 +8,7 @@ from .rect import Rect
 from .tile import Tile
 from .tile_attribute import TileAttribute
 from .tile_data import TileData
-from ..helpers import lerp
+from ..helpers.math import lerp
 from .visit_state import VisitState
 
 INVALID_PARENT = (-1, -1)

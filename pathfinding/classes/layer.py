@@ -1,53 +1,8 @@
-import subprocess
 import os
-from osgeo import gdal, gdalconst
 from typing import Optional, List, Tuple
-from pathfinding.classes.tile_attribute import TileAttribute
 
-RESOLUTION = 1.0  # meter
-
-
-def linearize(input_filename: str, output_filename: str):
-    print(f"Linearizing {input_filename} to {output_filename}...")
-
-    subprocess.run(
-        [
-            "ogr2ogr",
-            "-nlt",
-            "CONVERT_TO_LINEAR",
-            "-skipfailures",
-            output_filename,
-            input_filename,
-        ],
-        check=True,
-    )
-
-    return output_filename
-
-
-def rasterize(
-    input_filename: str,
-    output_filename: str,
-    where: Optional[str] = None,
-) -> str:
-    print(f"Rasterizing {input_filename} to {output_filename}...")
-
-    gdal.Rasterize(
-        output_filename,
-        input_filename,
-        options=gdal.RasterizeOptions(
-            burnValues=[255],
-            allTouched=True,
-            creationOptions=["COMPRESS=LZW", "TILED=YES"],
-            outputType=gdalconst.GDT_Byte,
-            xRes=RESOLUTION,
-            yRes=RESOLUTION,
-            where=where,
-        ),
-    )
-
-    print(f"Created {output_filename}")
-    return output_filename
+from .tile_attribute import TileAttribute
+from ..helpers.transformations import linearize, rasterize
 
 
 class Feature:
@@ -87,8 +42,15 @@ class Layer:
         self._features = features
         # feature is a tuple of where clause and value
 
+    @property
+    def layer_name(self) -> str:
+        return self._layer_name
+
     def linearize(
-        self, input_dir: Optional[str] = None, output_dir: Optional[str] = None
+        self,
+        wkt_geometry: str,
+        input_dir: Optional[str] = None,
+        output_dir: Optional[str] = None,
     ) -> str:
         if self._linearized:
             return self._linearized
@@ -105,11 +67,15 @@ class Layer:
             self._linearized = output_filename
             return self._linearized
 
-        self._linearized = linearize(input_filename, output_filename)
+        self._linearized = linearize(wkt_geometry, input_filename, output_filename)
         return self._linearized
 
     def rasterize(
-        self, input_dir: Optional[str] = None, output_dir: Optional[str] = None
+        self,
+        wkt_geometry: str,
+        input_dir: Optional[str] = None,
+        gpkg_dir: Optional[str] = None,
+        output_dir: Optional[str] = None,
     ) -> List[Tuple[str, Feature]]:
         if self._rasterized:
             return self._rasterized
@@ -121,7 +87,7 @@ class Layer:
                 output_filename = f"{output_dir}/{output_filename}"
 
             output = rasterize(
-                self.linearize(input_dir=input_dir, output_dir=output_dir),
+                self.linearize(wkt_geometry, input_dir=input_dir, output_dir=gpkg_dir),
                 output_filename,
                 where=feature.where,
             )

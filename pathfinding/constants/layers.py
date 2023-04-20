@@ -1,5 +1,5 @@
-from .layer import Layer, Feature
-from pathfinding.classes.tile_attribute import TileAttribute
+from ..classes.tile_attribute import TileAttribute
+from ..classes.layer import Feature, Layer
 
 layers = [
     Layer(

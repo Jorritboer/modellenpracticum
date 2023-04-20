@@ -1,7 +1,7 @@
 import rasterio
 
 from typing import Optional
-from rasterize.layer import Layer
+from .layer import Layer
 from .tile_attribute import TileAttribute
 from .grid import Grid
 from .rect import Rect

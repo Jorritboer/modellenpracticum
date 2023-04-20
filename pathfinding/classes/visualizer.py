@@ -1,27 +1,25 @@
 import matplotlib.pyplot as plt
 from random import randint
 import json
-from ..constants import BGT_DATA_PATH 
 import os
+from ..constants.paths import BGT_DATA_PATH
+
 
 class Visualizer:
     """Visualization purposes of found path"""
-    #path: found path
-    #geotransform: (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size)
-    def __init__(self, paths, geotransform = (0,0.5,0,0,0,0.5)) -> None:
+
+    # path: found path
+    # geotransform: (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size)
+    def __init__(self, paths, geotransform=(0, 0.5, 0, 0, 0, 0.5)) -> None:
         self.paths = [[(p[0], p[1]) for p in path] for path in paths]
         self.geotransform = geotransform
         pass
 
     def array_index_to_coordinates(
         self,
-
         array_index_to_transform: list,
-
         geotransform: list,
-
     ) -> list:
-
         """
 
         Change index values of a raster (combined with geotransform) to real coordinates.
@@ -44,14 +42,18 @@ class Visualizer:
 
         """
 
-        upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size = geotransform
-
-
+        (
+            upper_left_x,
+            x_size,
+            x_rotation,
+            upper_left_y,
+            y_rotation,
+            y_size,
+        ) = geotransform
 
         real_coordinates = []
 
         for y_index, x_index in array_index_to_transform:
-
             x = upper_left_x + ((x_index * x_size) + (x_size / 2))
 
             y = upper_left_y - abs(((y_index * y_size) + (y_size / 2)))
@@ -60,28 +62,41 @@ class Visualizer:
 
         return real_coordinates
 
-
     def getGEOJSON(self, name: str = "path"):
-        
-        pathfeatures = [ {"type": "Feature",
-                            "geometry":{
-                            "type": "LineString",
-                            "coordinates":[list(coord) for coord in self.array_index_to_coordinates(path,self.geotransform)]}} for path in self.paths if path is not None]
+        pathfeatures = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        list(coord)
+                        for coord in self.array_index_to_coordinates(
+                            path, self.geotransform
+                        )
+                    ],
+                },
+            }
+            for path in self.paths
+            if path is not None
+        ]
 
-        dictionary = {
-            "type": "FeatureCollection",
-            "features": pathfeatures
-        }
-        
+        dictionary = {"type": "FeatureCollection", "features": pathfeatures}
+
         if not os.path.exists(BGT_DATA_PATH):
             os.makedirs(BGT_DATA_PATH)
-        with open(os.path.join(BGT_DATA_PATH, name+".json"), "a") as f:
+        with open(os.path.join(BGT_DATA_PATH, name + ".json"), "a") as f:
             json.dump(dictionary, f, indent=0)
 
-
-        
     def show(self):
         for path in self.paths:
-            colour = (randint(0,255), randint(0,255), randint(0,255))
-            plt.plot([x[0] for x in path], [x[1] for x in self.array_index_to_coordinates(path,self.geotransform)], linestyle = 'dotted', color=colour)
+            colour = (randint(0, 255), randint(0, 255), randint(0, 255))
+            plt.plot(
+                [x[0] for x in path],
+                [
+                    x[1]
+                    for x in self.array_index_to_coordinates(path, self.geotransform)
+                ],
+                linestyle="dotted",
+                color=colour,
+            )
         plt.show()
