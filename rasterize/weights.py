@@ -351,7 +351,7 @@ layers = [
         features=[  # 7
             Feature("hek", "`bgt-type` = 'hek'", TileAttribute.Scheiding_Hek, 5),
             Feature(
-                "damwand", "`bgt-type` = 'damwand", TileAttribute.Scheiding_Damwand, 5
+                "damwand", "`bgt-type` = 'damwand'", TileAttribute.Scheiding_Damwand, 5
             ),
             Feature(
                 "geluidsscherm",
