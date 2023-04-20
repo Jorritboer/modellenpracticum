@@ -3,21 +3,17 @@ from random import randint
 from .classes import Grid, Point, Rect, TileData, TiffReader, TileAttribute
 from .helpers import download_bgt_data, wkt_rect_from_corners
 from .classes.visualizer import Visualizer
+from rasterize.weights import layers
 
 
 def main():
     print("creating grid")
-    grid = Grid(Rect(2000, 2000))
+    grid = Grid(Rect(4000, 4000))
     print("grid created")
-    TiffReader.read_tiff("testdata/begroeidterreindeel.tiff", grid, 1)
-    TiffReader.read_tiff("testdata/onbegroeidterreindeel.tiff", grid, 500)
-    c = 0
-    for x in range(grid.dimensions.width):
-        for y in range(grid.dimensions.height):
-            if not grid.get_registered((x, y)):
-                c += 1
-                grid.register_tile_at((x, y), weight=1000)
-    print(grid.find_path((0, 0), (1999, 1999)))
+    for layer in layers:
+        TiffReader.read_tiffs(grid, layer, input_dir="extract", output_dir="output")
+
+    print(grid.find_path((0, 0), (10, 10)))
 
 
 if __name__ == "__main__":
