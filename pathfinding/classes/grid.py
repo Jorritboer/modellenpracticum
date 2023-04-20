@@ -100,7 +100,7 @@ class Grid:
         self._visit_states[pos] = value.value
 
     def get_registered(self, pos: Tuple[int, int]) -> bool:
-        return VisitState(self._registered[pos])
+        return self._registered[pos]
 
     def set_registered(self, pos: Tuple[int, int], value: bool):
         self._registered[pos] = value
