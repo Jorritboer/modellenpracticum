@@ -1,6 +1,7 @@
 from random import randint
 
-from .classes import Grid, Point, Rect, TileData, TiffReader
+from .classes import Grid, Point, Rect, TileData, TiffReader, TileAttribute
+from .classes.visualizer import Visualizer
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
                 c += 1
                 grid.register_tile_at((x, y), weight=1000)
     print(grid.find_path((0, 0), (1999, 1999)))
+
 
 
 if __name__ == "__main__":
