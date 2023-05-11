@@ -36,6 +36,7 @@ class TiffReader:
         wkt_geometry: str,
         resolution: float,
         input_dir: Optional[str] = None,
+        gpkg_dir: Optional[str] = None,
         output_dir: Optional[str] = None,
         outputBounds: Optional[Tuple[float, float, float, float]] = None,
     ):
@@ -43,7 +44,7 @@ class TiffReader:
             wkt_geometry,
             resolution=resolution,
             input_dir=input_dir,
-            gpkg_dir=output_dir,
+            gpkg_dir=gpkg_dir,
             output_dir=output_dir,
             outputBounds=outputBounds,
         )

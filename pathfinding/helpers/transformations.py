@@ -1,9 +1,14 @@
+import os
 import subprocess
 from osgeo import gdal, gdalconst
 from typing import Optional, Tuple
 
 
 def linearize(wkt_geometry: str, input_filename: str, output_filename: str):
+    if os.path.exists(output_filename):
+        print(f"{output_filename} already exists, skipping linearization..")
+        return output_filename
+
     print(f"Linearizing {input_filename} to {output_filename}")
     subprocess.run(
         [
@@ -28,6 +33,10 @@ def rasterize(
     resolution: float = 1.0,  # in meters
     outputBounds: Optional[Tuple[float, float, float, float]] = None,
 ) -> str:
+    if os.path.exists(output_filename):
+        print(f"{output_filename} already exists, skipping rasterization..")
+        return output_filename
+
     print(f"Rasterizing {input_filename} to {output_filename}")
     gdal.Rasterize(
         output_filename,

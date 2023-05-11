@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from random import randint
 import json
 import os
-from ..constants.paths import BGT_DATA_PATH
+from ..constants.paths import GEOJSON_DATA_PATH
 
 
 class Visualizer:
@@ -87,9 +87,9 @@ class Visualizer:
 
         dictionary = {"type": "FeatureCollection", "features": pathfeatures}
 
-        if not os.path.exists(BGT_DATA_PATH):
-            os.makedirs(BGT_DATA_PATH)
-        with open(os.path.join(BGT_DATA_PATH, name + ".json"), "a") as f:
+        if not os.path.exists(GEOJSON_DATA_PATH):
+            os.makedirs(GEOJSON_DATA_PATH)
+        with open(os.path.join(GEOJSON_DATA_PATH, name + ".geojson"), "w") as f:
             json.dump(dictionary, f, indent=4)
 
     def show(self):

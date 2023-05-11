@@ -1,8 +1,7 @@
+import os
 import requests
 import json
 import time
-import os
-import shutil
 from typing import List, Tuple, Optional
 from zipfile import ZipFile
 
@@ -39,11 +38,6 @@ def download_bgt_data(
 
     # Create download link
     download_link = "https://api.pdok.nl" + status_load["_links"]["download"]["href"]
-
-    # Removes file if it exists already
-    if os.path.isdir(BGT_DATA_PATH):
-        shutil.rmtree(BGT_DATA_PATH)
-    os.mkdir(BGT_DATA_PATH)
 
     # Save files
     dl_file = requests.get(download_link)
