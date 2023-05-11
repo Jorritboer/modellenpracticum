@@ -1,4 +1,5 @@
 import os
+import shutil
 import requests
 import json
 import time
@@ -6,11 +7,21 @@ from typing import List, Tuple, Optional
 from zipfile import ZipFile
 
 from ..constants.paths import BGT_DATA_PATH
+from ..helpers.hash import bgt_hash
 
 
 def download_bgt_data(
     wkt_geometry: str, layer_names: str
 ) -> Tuple[bool, Optional[str]]:
+    path_prefix = os.path.join(BGT_DATA_PATH, bgt_hash(wkt_geometry))
+    zip_path = f"{path_prefix}.zip"
+
+    if os.path.exists(zip_path):
+        return True, "taken from cache"
+
+    if not os.path.exists(BGT_DATA_PATH):
+        os.makedirs(BGT_DATA_PATH)
+
     url = "https://api.pdok.nl/lv/bgt/download/v1_0/full/custom"
     head = {"accept": "application/json", "Content-Type": "application/json"}
     stat_head = {"accept": "application/json"}
@@ -41,12 +52,14 @@ def download_bgt_data(
 
     # Save files
     dl_file = requests.get(download_link)
-    zip_path = f"{BGT_DATA_PATH}/tmp.zip"
     open(zip_path, "wb").write(dl_file.content)
     with ZipFile(zip_path, "r") as zip:
         # We do not use zip.extractall, because it does not perform sanitization
         for file in zip.infolist():
             zip.extract(file, BGT_DATA_PATH)
-    os.remove(zip_path)
+            shutil.move(
+                os.path.join(BGT_DATA_PATH, file.filename),
+                f"{path_prefix}_{file.filename}",
+            )
 
     return True, None

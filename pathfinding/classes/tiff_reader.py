@@ -42,7 +42,7 @@ class TiffReader:
     ):
         tiffs = layer.rasterize(
             wkt_geometry,
-            resolution=resolution,
+            resolution,
             input_dir=input_dir,
             gpkg_dir=gpkg_dir,
             output_dir=output_dir,

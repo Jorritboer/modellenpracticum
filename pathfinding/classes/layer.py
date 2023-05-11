@@ -2,6 +2,7 @@ import os
 from typing import Optional, List, Tuple
 
 from .tile_attribute import TileAttribute
+from ..helpers.hash import bgt_hash, gpkg_hash, tiff_hash
 from ..helpers.transformations import linearize, rasterize
 
 
@@ -55,13 +56,18 @@ class Layer:
         if self._linearized:
             return self._linearized
 
-        input_filename = self._gml_filename
-        if input_dir:
-            input_filename = f"{input_dir}/{input_filename}"
+        bgt_prefix = bgt_hash(wkt_geometry)
+        gpkg_prefix = gpkg_hash(wkt_geometry)
 
-        output_filename = f"{self._layer_name}.gpkg"
+        input_filename = f"{bgt_prefix}_{self._gml_filename}"
+        if input_dir:
+            input_filename = os.path.join(input_dir, input_filename)
+
+        output_filename = f"{gpkg_prefix}_{self._layer_name}.gpkg"
         if output_dir:
-            output_filename = f"{output_dir}/{output_filename}"
+            output_filename = os.path.join(output_dir, output_filename)
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
 
         # if os.path.isfile(output_filename):
         #     self._linearized = output_filename
@@ -82,11 +88,15 @@ class Layer:
         if self._rasterized:
             return self._rasterized
 
+        tiff_prefix = tiff_hash(wkt_geometry, resolution)
+
         outputs = []
         for feature in self._features:
-            output_filename = f"{self._layer_name}_{feature.name}.tiff"
+            output_filename = f"{tiff_prefix}_{self._layer_name}_{feature.name}.tiff"
             if output_dir:
-                output_filename = f"{output_dir}/{output_filename}"
+                output_filename = os.path.join(output_dir, output_filename)
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
 
             output = rasterize(
                 self.linearize(wkt_geometry, input_dir=input_dir, output_dir=gpkg_dir),
