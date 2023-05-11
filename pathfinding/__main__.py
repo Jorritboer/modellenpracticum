@@ -43,6 +43,50 @@ def main():
         default=0.1,
     )
     parser.add_argument(
+        "-l",
+        "--max-length",
+        help="Maximum length of the path, in meters",
+        action="store",
+        type=float,
+        required=False,
+    )
+    parser.add_argument(
+        "-c",
+        "--path-cost",
+        help="Cost of the path per meter of length",
+        action="store",
+        type=float,
+        required=False,
+        default=0.0,
+    )
+    parser.add_argument(
+        "-p",
+        "--paths",
+        help="Amount of paths to find, path 1 being the shortest",
+        action="store",
+        type=int,
+        required=False,
+        default=1,
+    )
+    parser.add_argument(
+        "-m",
+        "--existing-path-multiplier",
+        help="How much more existing paths should be weighted when finding other paths",
+        action="store",
+        type=float,
+        required=False,
+        default=1.0,
+    )
+    parser.add_argument(
+        "-r",
+        "--existing-path-radius",
+        help="Amount of meters of influence existing paths have",
+        action="store",
+        type=float,
+        required=False,
+        default=0.0,
+    )
+    parser.add_argument(
         "start",
         help="RDC of the path start: x,y",
         nargs=1,
@@ -92,7 +136,7 @@ def main():
             shutil.rmtree(TIFF_DATA_PATH)
         os.makedirs(TIFF_DATA_PATH)
 
-        print(f"Downloading BGT data for a {grid_width}x{grid_height} grid..")
+        print(f"Downloading BGT data for a {grid_width}x{grid_height}m grid..")
         success, err = download_bgt_data(
             wkt_rect,
             [layer.layer_name for layer in layers],
@@ -104,7 +148,7 @@ def main():
             return
 
     print(
-        f"\nRasterizing to TIFF files and loading into {grid_width}x{grid_height} grid.."
+        f"\nRasterizing to TIFF files and loading into {grid_width}x{grid_height}m grid.."
     )
     for layer in layers:
         TiffReader.read_tiffs(
@@ -125,22 +169,32 @@ def main():
                 grid.register_tile_at((x, y), weight=10000)
     print(f"{c} unregistered tiles")
 
-    print("\nFinding path..")
-    path = grid.find_path(
-        (
-            int((path_x_start - path_x_min + path_width_offset) / args.resolution),
-            int((path_y_start - path_y_min + path_height_offset) / args.resolution),
-        ),
-        (
-            int((path_x_end - path_x_min + path_width_offset) / args.resolution),
-            int((path_y_end - path_y_min + path_height_offset) / args.resolution),
-        ),
-    )
+    existing_paths = []
+    for i in range(args.paths):
+        print(f"\nFinding path {i+1}..")
+        path = grid.find_path(
+            (
+                int((path_x_start - path_x_min + path_width_offset) / args.resolution),
+                int((path_y_start - path_y_min + path_height_offset) / args.resolution),
+            ),
+            (
+                int((path_x_end - path_x_min + path_width_offset) / args.resolution),
+                int((path_y_end - path_y_min + path_height_offset) / args.resolution),
+            ),
+            max_length=None
+            if args.max_length is None
+            else args.max_length / args.resolution,
+            path_cost=args.path_cost * args.resolution,
+            existing_paths=existing_paths,
+            existing_path_multiplier=args.existing_path_multiplier,
+            existing_path_radius=int(args.existing_path_multiplier / args.resolution),
+        )
+        existing_paths.append(path)
 
-    print("\nTransforming path to GEOJSON..")
-    Visualizer(
-        [path], (grid_x_min, args.resolution, 0, grid_y_min, 0, args.resolution)
-    ).getGEOJSON("path_1")
+        print("\nTransforming path to GEOJSON..")
+        Visualizer(
+            [path], (grid_x_min, args.resolution, 0, grid_y_min, 0, args.resolution)
+        ).getGEOJSON(f"path_{i+1}")
 
 
 if __name__ == "__main__":
