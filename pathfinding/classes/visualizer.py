@@ -76,16 +76,21 @@ class Visualizer:
                         )
                     ],
                 },
-                "style": {
-                    "fill": "blue",
-                    "stroke-width": "3",
-                },
+                # style doesn't work
+                # "style": {
+                #     "fill": "blue",
+                #     "stroke-width": "3",
+                # },
             }
             for path in self.paths
             if path is not None
         ]
 
-        dictionary = {"type": "FeatureCollection", "features": pathfeatures}
+        dictionary = {
+            "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "EPSG:28992"}},
+            "features": pathfeatures,
+        }
 
         if not os.path.exists(GEOJSON_DATA_PATH):
             os.makedirs(GEOJSON_DATA_PATH)
