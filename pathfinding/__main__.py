@@ -171,12 +171,40 @@ def main():
 
         path = grid.find_path(
             (
-                int((path_x_start - path_x_min + path_width_offset) / args.resolution),
-                int((path_y_start - path_y_min + path_height_offset) / args.resolution),
+                int(
+                    (
+                        path_width_offset
+                        if path_x_start < path_x_end
+                        else (grid_width - path_width_offset)
+                    )
+                    / args.resolution
+                ),
+                int(
+                    (
+                        path_height_offset
+                        if path_y_start > path_y_end
+                        else (grid_height - path_height_offset)
+                    )
+                    / args.resolution
+                ),
             ),
             (
-                int((path_x_end - path_x_min + path_width_offset) / args.resolution),
-                int((path_y_end - path_y_min + path_height_offset) / args.resolution),
+                int(
+                    (
+                        (grid_width - path_width_offset)
+                        if path_x_start < path_x_end
+                        else path_width_offset
+                    )
+                    / args.resolution
+                ),
+                int(
+                    (
+                        (grid_height - path_height_offset)
+                        if path_y_start > path_y_end
+                        else path_height_offset
+                    )
+                    / args.resolution
+                ),
             ),
             max_length=None
             if args.max_length is None
@@ -193,7 +221,16 @@ def main():
         if args.paths > 1:
             name += f"_{i+1}"
         Visualizer(
-            [path], (grid_x_min, args.resolution, 0, grid_y_min, 0, args.resolution)
+            [path],
+            (
+                grid_x_min,
+                args.resolution,
+                0,
+                grid_y_min,
+                0,
+                args.resolution,
+                grid_zoomed_height,
+            ),
         ).getGEOJSON(name)
 
 
