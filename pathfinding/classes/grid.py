@@ -100,7 +100,7 @@ class Grid:
         self._visit_states[pos] = value.value
 
     def get_registered(self, pos: Tuple[int, int]) -> bool:
-        return VisitState(self._registered[pos])
+        return self._registered[pos]
 
     def set_registered(self, pos: Tuple[int, int], value: bool):
         self._registered[pos] = value
@@ -115,13 +115,13 @@ class Grid:
     def register_tile_at(
         self,
         pos: Tuple[int, int],
-        weight: float = 0,
+        base_weight: float = 0,
         attributes: List[TileAttribute] = [],
     ) -> None:
         """Register the tile with the given tile data."""
         self.set_registered(pos, True)
-        self.set_base_weight(pos, weight)
-        self.set_weight(pos, weight)
+        self.set_base_weight(pos, base_weight)
+        self.set_weight(pos, base_weight)
         for attribute in attributes:
             self.set_attribute(pos, attribute, True)
 
@@ -206,7 +206,7 @@ class Grid:
 
         # Correct weights to attributes
         if attribute_multipliers is not None:
-            self._correct_weights_to_attributes(attribute_multipliers)
+            self._correct_weights_to_attributes(attribute_weights)
 
         # Corrects weights to existing_paths
         if existing_paths is not None:
@@ -289,14 +289,27 @@ class Grid:
         """Format a path into a human-readable string."""
         return " -> ".join([f"{pos[0]},{pos[1]}" for pos in path])
 
-    def _correct_weights_to_attributes(
-        self, attribute_multipliers: Dict[(int, float)]
-    ) -> None:
-        for x in range(self.dimensions.width):
-            for y in range(self.dimensions.height):
-                for attr, multiplier in attribute_multipliers.items():
-                    if self.get_attribute((x, y), attr):
-                        self.set_weight((x, y), self.get_weight((x, y)) * multiplier)
+    def _weight_from_attributes(
+            self,
+            pos: Tuple[int, int],
+            base_weight: float,
+            attribute_weights: Dict[int, float],
+        ) -> float:
+            weight = base_weight
+            for attribute, attribute_weight in attribute_weights.items():
+                if self.get_attribute(pos, attribute):
+                    weight += attribute_weight
+            return weight
+
+    def _init_weights_from_attributes(self, attribute_weights: Dict[int, float] = {}):
+           for x in range(self.dimensions.width):
+               for y in range(self.dimensions.height):
+                    self.set_weight(
+                                (x, y),
+                                self._weight_from_attributes(
+                                    (x, y), self.get_base_weight((x, y)), attribute_weights
+                                ),
+                            )
 
     def _correct_weights_to_paths(
         self, paths: List[List[Tuple[int, int]]], multiplier: int, radius: int

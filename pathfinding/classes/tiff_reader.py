@@ -13,7 +13,7 @@ from .tile_data import TileData
 class TiffReader:
     """Import tiff files"""
 
-    def _read_tiff(grid: Grid, src: str, attribute: TileAttribute, weight=1):
+    def _read_tiff(grid: Grid, src: str, attribute: TileAttribute, base_weight=0):
         if not os.path.exists(src):
             print(f"warning: skipping tiff {src}")
             return grid
@@ -25,7 +25,7 @@ class TiffReader:
                 for x in range(len(array[y])):
                     if array[y][x] > 0:
                         grid.register_tile_at(
-                            (x, y), weight=weight, attributes=[attribute]
+                            (x, y), base_weight=base_weight, attributes=[attribute]
                         )
         print("done reading tiff file")
         return grid

@@ -1,6 +1,8 @@
 import os
 import math
 import shutil
+import ctypes
+import pathlib
 from typing import List, Tuple
 from random import randint
 from argparse import ArgumentParser
@@ -159,7 +161,7 @@ def main():
         for y in range(grid.dimensions.height):
             if not grid.get_registered((x, y)):
                 c += 1
-                grid.register_tile_at((x, y), weight=10000)
+                grid.register_tile_at((x, y), base_weight=10000)
     print(f"{c} unregistered tiles")
 
     existing_paths = []
