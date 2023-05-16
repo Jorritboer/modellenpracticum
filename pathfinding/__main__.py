@@ -222,6 +222,7 @@ def main():
             name += f"_{i+1}"
         Visualizer(
             [path],
+            grid,
             (
                 grid_x_min,
                 args.resolution,
