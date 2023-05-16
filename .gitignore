@@ -1,6 +1,8 @@
 __pycache__/
 .DS_Store
 data
-.bgt_data
+.bgt_data/
+.gpkg_data/
+.tiff_data/
 extract
-output
+output/

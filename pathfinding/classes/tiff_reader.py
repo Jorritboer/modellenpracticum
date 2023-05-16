@@ -1,7 +1,9 @@
 import rasterio
+import os
+from typing import Tuple
 
 from typing import Optional
-from rasterize.layer import Layer
+from .layer import Layer
 from .tile_attribute import TileAttribute
 from .grid import Grid
 from .rect import Rect
@@ -12,12 +14,16 @@ class TiffReader:
     """Import tiff files"""
 
     def _read_tiff(grid: Grid, src: str, attribute: TileAttribute, weight=1):
-        print("reading tiff file")
+        if not os.path.exists(src):
+            print(f"warning: skipping tiff {src}")
+            return grid
+
+        print(f"reading tiff file {src}")
         with rasterio.open(src) as tiff:
             array = tiff.read(1)
-            for x in range(len(array)):
-                for y in range(len(array[x])):
-                    if array[x][y] > 0:
+            for y in range(len(array)):
+                for x in range(len(array[y])):
+                    if array[y][x] > 0:
                         grid.register_tile_at(
                             (x, y), weight=weight, attributes=[attribute]
                         )
@@ -27,9 +33,20 @@ class TiffReader:
     def read_tiffs(
         grid: Grid,
         layer: Layer,
+        wkt_geometry: str,
+        resolution: float,
         input_dir: Optional[str] = None,
+        gpkg_dir: Optional[str] = None,
         output_dir: Optional[str] = None,
+        outputBounds: Optional[Tuple[float, float, float, float]] = None,
     ):
-        tiffs = layer.rasterize(input_dir=input_dir, output_dir=output_dir)
+        tiffs = layer.rasterize(
+            wkt_geometry,
+            resolution,
+            input_dir=input_dir,
+            gpkg_dir=gpkg_dir,
+            output_dir=output_dir,
+            outputBounds=outputBounds,
+        )
         for tiff, feature in tiffs:
             TiffReader._read_tiff(grid, tiff, feature.attribute)
