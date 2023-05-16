@@ -133,7 +133,7 @@ def main():
     )
     if success:
         if reason:
-            print("Download successful: {reason}")
+            print(f"Download successful: {reason}")
         else:
             print("Download successful")
     else:
