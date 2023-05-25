@@ -389,3 +389,5 @@ layers = [
         features=[],
     ),  # cannot find layers
 ]
+
+layers_dict = {layer.layer_name: layer for layer in layers}
