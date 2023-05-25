@@ -105,10 +105,9 @@ class Grid:
     def set_registered(self, pos: Tuple[int, int], value: bool):
         self._registered[pos] = value
 
-    def get_attribute(self, pos: Tuple[int, int], attr: int) -> bool:
-        return bool(self._attributes[pos] & (1 << attr))
-
-    def set_attribute(self, pos: Tuple[int, int], attr: int, value: bool):
+    def get_attribute(self, pos: Tuple[int, int], attr: TileAttribute) -> bool:
+        return bool(self._attributes[pos] & (1 << int(attr)))
+    def set_attribute(self, pos: Tuple[int, int], attr: TileAttribute, value: bool):
         if self.get_attribute(pos, attr) != value:
             self._attributes[pos] ^= 1 << attr
 
@@ -290,7 +289,7 @@ class Grid:
         return " -> ".join([f"{pos[0]},{pos[1]}" for pos in path])
 
     def _correct_weights_to_attributes(
-        self, attribute_multipliers: Dict[(int, float)]
+        self, attribute_multipliers: Dict[TileAttribute, float]
     ) -> None:
         for x in range(self.dimensions.width):
             for y in range(self.dimensions.height):

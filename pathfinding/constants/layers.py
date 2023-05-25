@@ -149,13 +149,13 @@ layers = [
                 "berm",
                 "function = 'berm'",
                 TileAttribute.OndersteunendWegdeel_Berm,
-                -10,
+                1,
             ),
             Feature(
                 "groenvoorziening",
                 "surfaceMaterial = 'groenvoorziening'",
                 TileAttribute.OndersteunendWegdeel_Groenvoorziening,
-                -10,
+                1,
             ),
             Feature(
                 "half-verhard",
@@ -190,7 +190,7 @@ layers = [
             Feature(
                 "zand",
                 "`bgt-fysiekVoorkomen` = 'zand'",
-                TileAttribute.OnbegroeidTerreindeel_Erf,
+                TileAttribute.OnbegroeidTerreindeel_Zand,
                 10,
             ),
             Feature(

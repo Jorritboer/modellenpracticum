@@ -126,6 +126,12 @@ def main():
     grid_zoomed_height = math.ceil(grid_height / args.resolution)
     grid = Grid(Rect(grid_zoomed_width, grid_zoomed_height))
 
+    attribute_multipliers = {
+        feature.attribute: feature.weight
+        for layer in layers
+        for feature in layer._features
+    }
+
     print(f"Downloading BGT data for a {grid_width}x{grid_height}m grid..")
     success, reason = download_bgt_data(
         wkt_rect,
@@ -159,7 +165,7 @@ def main():
         for y in range(grid.dimensions.height):
             if not grid.get_registered((x, y)):
                 c += 1
-                grid.register_tile_at((x, y), weight=10000)
+                grid.register_tile_at((x, y), weight=math.inf)
     print(f"{c} unregistered tiles")
 
     existing_paths = []
@@ -213,6 +219,7 @@ def main():
             existing_paths=existing_paths,
             existing_path_multiplier=args.existing_path_multiplier,
             existing_path_radius=int(args.existing_path_multiplier / args.resolution),
+            attribute_multipliers=attribute_multipliers,
         )
         existing_paths.append(path)
 
