@@ -154,7 +154,9 @@ def get_config() -> object:
         file = open(CONFIG_DATA_PATH, "w")
         config = {
             "layer_weights": {
-                layer.layer_name: {feature.name: 1.0 for feature in layer.features}
+                layer.layer_name: {
+                    feature.name: feature.weight for feature in layer.features
+                }
                 for layer in layers
             },
             "unregistered_weight": 10000.0,
