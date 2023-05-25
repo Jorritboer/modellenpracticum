@@ -142,7 +142,8 @@ def get_config() -> object:
 
     Returns:
     {
-        "attribute_weights": { [TileAttribute]?: number }
+        "attribute_weights": { [TileAttribute]?: number },
+        "unregistered_weight": number
     }
     """
 
@@ -155,7 +156,8 @@ def get_config() -> object:
             "layer_weights": {
                 layer.layer_name: {feature.name: 1.0 for feature in layer.features}
                 for layer in layers
-            }
+            },
+            "unregistered_weight": 10000.0,
         }
         json.dump(config, file, indent=4)
     file.close()
@@ -172,8 +174,11 @@ def get_config() -> object:
     schema = {
         "type": "object",
         "properties": {
-            "layer_weights": {"type": "object", "properties": layer_weights}
+            "layer_weights": {"type": "object", "properties": layer_weights},
+            "unregistered_weight": {"type": "number"},
         },
+        "additionalProperties": False,
+        "minProperties": 2,
     }
     validate(instance=config, schema=schema)
 
@@ -182,7 +187,8 @@ def get_config() -> object:
             layers_dict[layer_name].features_dict[feature_name].attribute: weight
             for layer_name, features in config["layer_weights"].items()
             for feature_name, weight in features.items()
-        }
+        },
+        "unregistered_weight": config["unregistered_weight"],
     }
 
 
@@ -255,7 +261,7 @@ def main():
         for y in range(grid.dimensions.height):
             if not grid.get_registered((x, y)):
                 c += 1
-                grid.register_tile_at((x, y), base_weight=1000)
+                grid.register_tile_at((x, y), base_weight=config["unregistered_weight"])
     print(f"{c} unregistered tiles")
 
     existing_paths = []
