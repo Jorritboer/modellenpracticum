@@ -57,7 +57,7 @@ class Visualizer:
         for x_index, y_index in array_index_to_transform:
             x = upper_left_x + (x_index * x_size) + (x_size / 2)
 
-            y = upper_left_y + ((grid_height - y_index) * y_size) + (y_size / 2)
+            y = upper_left_y + ((grid_height - y_index) * y_size) - (y_size / 2)
 
             real_coordinates.append((x, y))
 
