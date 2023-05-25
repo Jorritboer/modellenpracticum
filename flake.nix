@@ -31,6 +31,7 @@
           geopandas
           numpy
           gdal
+          jsonschema
         ]))
       ];
     };
