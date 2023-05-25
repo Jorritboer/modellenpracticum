@@ -6,3 +6,4 @@ data
 .tiff_data/
 extract
 output/
+config.json

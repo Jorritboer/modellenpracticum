@@ -107,6 +107,7 @@ class Grid:
 
     def get_attribute(self, pos: Tuple[int, int], attr: TileAttribute) -> bool:
         return bool(self._attributes[pos] & (1 << int(attr)))
+
     def set_attribute(self, pos: Tuple[int, int], attr: TileAttribute, value: bool):
         if self.get_attribute(pos, attr) != value:
             self._attributes[pos] ^= 1 << attr
@@ -195,7 +196,7 @@ class Grid:
         existing_paths: List[List[Tuple[int, int]]] -- existing paths that should be weighted more, default None
         existing_path_multiplier: float -- how much more existing paths should be weighted (diminishes linearly with distance), default 1
         existing_path_radius: int -- how many tiles the existing paths stretch for purpose of weight multiplication, default 0
-        attribute_weights: Dict[TileAttribute, float] -- weights for each TileAttribute, default 1
+        attribute_weights: Dict[TileAttribute, float] -- weights for each TileAttribute, default 0
         """
 
         # Cleanup to prepare for running the algorithm
@@ -300,7 +301,9 @@ class Grid:
                 weight += attribute_weight
         return weight
 
-    def _init_weights_from_attributes(self, attribute_weights: Dict[TileAttribute, float] = {}):
+    def _init_weights_from_attributes(
+        self, attribute_weights: Dict[TileAttribute, float] = {}
+    ):
         for x in range(self.dimensions.width):
             for y in range(self.dimensions.height):
                 self.set_weight(

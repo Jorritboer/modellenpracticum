@@ -1,5 +1,5 @@
 import os
-from typing import Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple
 
 from .tile_attribute import TileAttribute
 from ..helpers.hash import bgt_hash, gpkg_hash, tiff_hash
@@ -46,6 +46,14 @@ class Layer:
     @property
     def layer_name(self) -> str:
         return self._layer_name
+
+    @property
+    def features(self) -> List[Feature]:
+        return self._features
+
+    @property
+    def features_dict(self) -> Dict[str, Feature]:
+        return {feature.name: feature for feature in self._features}
 
     def linearize(
         self,
