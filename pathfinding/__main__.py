@@ -57,6 +57,15 @@ def get_args() -> Namespace:
         default=0.0,
     )
     parser.add_argument(
+        "-f",
+        "--fraction",
+        help="if paths is equal to 2, find a different path for every [n*fraction: (n+1)*fraction] of the first path",
+        action="store",
+        type=float,
+        required=False,
+        default=1.0,
+    )
+    parser.add_argument(
         "-l",
         "--max-length",
         help="Maximum length of the path, in meters",
@@ -272,71 +281,136 @@ def main():
             print(f"\nFinding path..")
         else:
             print(f"\nFinding path {i+1}..")
+        if i==2 and args.path ==2 and not (args.fraction is None or  args.fraction >=1 or args.fraction <=0):
+            intervals = [(args.fraction*n, args.fraction*(n+1)) for n in range(math.ceil(1/args.fraction)) if args.fraction*(n+1) <=1]
+            for interval in intervals:
+                path = grid.find_path(
+                (
+                    int(
+                        (
+                            path_width_offset
+                            if path_x_start < path_x_end
+                            else (grid_width - path_width_offset)
+                        )
+                        / args.resolution
+                    ),
+                    int(
+                        (
+                            path_height_offset
+                            if path_y_start > path_y_end
+                            else (grid_height - path_height_offset)
+                        )
+                        / args.resolution
+                    ),
+                ),
+                (
+                    int(
+                        (
+                            (grid_width - path_width_offset)
+                            if path_x_start < path_x_end
+                            else path_width_offset
+                        )
+                        / args.resolution
+                    ),
+                    int(
+                        (
+                            (grid_height - path_height_offset)
+                            if path_y_start > path_y_end
+                            else path_height_offset
+                        )
+                        / args.resolution
+                    ),
+                ),
+                max_length=None
+                if args.max_length is None
+                else args.max_length / args.resolution,
+                path_cost=args.path_cost * args.resolution,
+                existing_paths=[x[math.floor(interval[0]*len(x)), math.ceil(interval[1]*len(x))] for x in existing_paths],
+                existing_path_multiplier=args.existing_path_multiplier,
+                existing_path_radius=int(args.existing_path_multiplier / args.resolution),
+                attribute_weights=config["attribute_weights"],
+                
+            )
+                print("Transforming path to GEOJSON..")
+                name = args.output_name 
+                name += f"_2[{interval[0]},[{interval[1]}]"
+                Visualizer(
+                    [path],
+                    (
+                        grid_x_min,
+                        args.resolution,
+                        0,
+                        grid_y_min,
+                        0,
+                        args.resolution,
+                        grid_zoomed_height,
+                    ),
+                ).getGEOJSON(name)
+        else:
+            path = grid.find_path(
+                (
+                    int(
+                        (
+                            path_width_offset
+                            if path_x_start < path_x_end
+                            else (grid_width - path_width_offset)
+                        )
+                        / args.resolution
+                    ),
+                    int(
+                        (
+                            path_height_offset
+                            if path_y_start > path_y_end
+                            else (grid_height - path_height_offset)
+                        )
+                        / args.resolution
+                    ),
+                ),
+                (
+                    int(
+                        (
+                            (grid_width - path_width_offset)
+                            if path_x_start < path_x_end
+                            else path_width_offset
+                        )
+                        / args.resolution
+                    ),
+                    int(
+                        (
+                            (grid_height - path_height_offset)
+                            if path_y_start > path_y_end
+                            else path_height_offset
+                        )
+                        / args.resolution
+                    ),
+                ),
+                max_length=None
+                if args.max_length is None
+                else args.max_length / args.resolution,
+                path_cost=args.path_cost * args.resolution,
+                existing_paths=existing_paths,
+                existing_path_multiplier=args.existing_path_multiplier,
+                existing_path_radius=int(args.existing_path_multiplier / args.resolution),
+                attribute_weights=config["attribute_weights"],
+            )
+            existing_paths.append(path)
 
-        path = grid.find_path(
-            (
-                int(
-                    (
-                        path_width_offset
-                        if path_x_start < path_x_end
-                        else (grid_width - path_width_offset)
-                    )
-                    / args.resolution
+            print("Transforming path to GEOJSON..")
+            name = args.output_name
+            if args.paths > 1: 
+                name += f"_{i+1}"
+            Visualizer(
+                [path],
+                (
+                    grid_x_min,
+                    args.resolution,
+                    0,
+                    grid_y_min,
+                    0,
+                    args.resolution,
+                    grid_zoomed_height,
                 ),
-                int(
-                    (
-                        path_height_offset
-                        if path_y_start > path_y_end
-                        else (grid_height - path_height_offset)
-                    )
-                    / args.resolution
-                ),
-            ),
-            (
-                int(
-                    (
-                        (grid_width - path_width_offset)
-                        if path_x_start < path_x_end
-                        else path_width_offset
-                    )
-                    / args.resolution
-                ),
-                int(
-                    (
-                        (grid_height - path_height_offset)
-                        if path_y_start > path_y_end
-                        else path_height_offset
-                    )
-                    / args.resolution
-                ),
-            ),
-            max_length=None
-            if args.max_length is None
-            else args.max_length / args.resolution,
-            path_cost=args.path_cost * args.resolution,
-            existing_paths=existing_paths,
-            existing_path_multiplier=args.existing_path_multiplier,
-            existing_path_radius=int(args.existing_path_multiplier / args.resolution),
-            attribute_weights=config["attribute_weights"],
-        )
-        existing_paths.append(path)
-
-        print("Transforming path to GEOJSON..")
-        name = args.output_name
-        if args.paths > 1:
-            name += f"_{i+1}"
-        Visualizer(
-            [path],
-            (
-                grid_x_min,
-                args.resolution,
-                0,
-                grid_y_min,
-                0,
-                args.resolution,
-                grid_zoomed_height,
-            ),
-        ).getGEOJSON(name)
+            ).getGEOJSON(name)
 
 
 if __name__ == "__main__":
