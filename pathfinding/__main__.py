@@ -279,11 +279,12 @@ def main():
     for i in range(args.paths):
         if args.paths == 1:
             print(f"\nFinding path..")
-        else:
-            print(f"\nFinding path {i+1}..")
-        if i==2 and args.path ==2 and not (args.fraction is None or  args.fraction >=1 or args.fraction <=0):
+        elif i==1 and args.paths ==2 and not (args.fraction is None or  args.fraction >=1 or args.fraction <=0):
+            
             intervals = [(args.fraction*n, args.fraction*(n+1)) for n in range(math.ceil(1/args.fraction)) if args.fraction*(n+1) <=1]
+            print(intervals)
             for interval in intervals:
+                print(f"\nFinding path_2[{interval[0]},{interval[1]}]")
                 path = grid.find_path(
                 (
                     int(
@@ -325,15 +326,15 @@ def main():
                 if args.max_length is None
                 else args.max_length / args.resolution,
                 path_cost=args.path_cost * args.resolution,
-                existing_paths=[x[math.floor(interval[0]*len(x)), math.ceil(interval[1]*len(x))] for x in existing_paths],
+                existing_paths=[x[math.floor(interval[0]*len(x)): math.ceil(interval[1]*len(x))] for x in existing_paths],
                 existing_path_multiplier=args.existing_path_multiplier,
-                existing_path_radius=int(args.existing_path_multiplier / args.resolution),
+                existing_path_radius=int(args.existing_path_radius / args.resolution),
                 attribute_weights=config["attribute_weights"],
                 
             )
                 print("Transforming path to GEOJSON..")
                 name = args.output_name 
-                name += f"_2[{interval[0]},[{interval[1]}]"
+                name += f"_2[{interval[0]},{interval[1]}]"
                 Visualizer(
                     [path],
                     (
@@ -347,6 +348,7 @@ def main():
                     ),
                 ).getGEOJSON(name)
         else:
+            print(f"\nFinding path {i+1}..")
             path = grid.find_path(
                 (
                     int(
@@ -390,7 +392,7 @@ def main():
                 path_cost=args.path_cost * args.resolution,
                 existing_paths=existing_paths,
                 existing_path_multiplier=args.existing_path_multiplier,
-                existing_path_radius=int(args.existing_path_multiplier / args.resolution),
+                existing_path_radius=int(args.existing_path_radius / args.resolution),
                 attribute_weights=config["attribute_weights"],
             )
             existing_paths.append(path)
