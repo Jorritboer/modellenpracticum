@@ -325,7 +325,7 @@ class Grid:
         while len(to_visit) > 0:
             pos, dist = to_visit.pop(0)
             self.set_weight(
-                pos, self.get_base_weight(pos) * lerp(multiplier, 1, dist / radius)
+                pos, self.get_weight(pos) * lerp(multiplier, 1, dist / radius)
             )
             if dist >= radius:
                 continue
