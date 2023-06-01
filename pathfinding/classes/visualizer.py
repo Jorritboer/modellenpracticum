@@ -54,7 +54,7 @@ class Visualizer:
             x_sign = 1 if x2 - x1 > 0 else -1
             y_sign = 1 if y2 - y1 > 0 else -1
             e = 0.1  # All grid elements e away from the line should be considered
-            cost = self.grid.get_cost(p2)
+            cost = self.grid.get_weight(p2)
 
             x = x1 + 0.5
             y = y1
@@ -62,9 +62,12 @@ class Visualizer:
             # Follow the line through the layer for dx steps,
             # checking each element (possibly including some border points e away from the line)
             def check_layer(dx, x, y):
-                if self.grid.get_cost((math.floor(x - x_sign * e), y)) != cost:
+                # print(
+                #     f"Checking cost of {(x-x_sign*e,y)} {self.grid.get_weight((math.floor(x - x_sign * e), y))} and {cost}"
+                # )
+                if self.grid.get_weight((math.floor(x - x_sign * e), y)) != cost:
                     return False, None, None
-                if self.grid.get_cost((math.floor(x), y)) != cost:
+                if self.grid.get_weight((math.floor(x), y)) != cost:
                     return False, None, None
                 while dx > 0:
                     if dx >= 1:
@@ -73,9 +76,9 @@ class Visualizer:
                     else:
                         x += x_sign * dx
                         dx = 0
-                    if self.grid.get_cost((math.floor(x), y)) != cost:
+                    if self.grid.get_weight((math.floor(x), y)) != cost:
                         return False, None, None
-                if self.grid.get_cost((math.floor(x + x_sign * e), y)) != cost:
+                if self.grid.get_weight((math.floor(x + x_sign * e), y)) != cost:
                     return False, None, None
                 y += y_sign
                 return True, x, y
@@ -155,39 +158,6 @@ class Visualizer:
                         list(coord)
                         for coord in self.array_index_to_coordinates(
                             self.smooth(path), self.geotransform
-                        )
-                    ],
-                },
-                # style doesn't work
-                # "style": {
-                #     "fill": "blue",
-                #     "stroke-width": "3",
-                # },
-            }
-            for path in self.paths
-            if path is not None
-        ]
-
-        dictionary = {
-            "type": "FeatureCollection",
-            "crs": {"type": "name", "properties": {"name": "EPSG:28992"}},
-            "features": pathfeatures,
-        }
-
-        if not os.path.exists(GEOJSON_DATA_PATH):
-            os.makedirs(GEOJSON_DATA_PATH)
-        with open(os.path.join(GEOJSON_DATA_PATH, name + "_smooth.geojson"), "w") as f:
-            json.dump(dictionary, f, indent=4)
-
-        pathfeatures = [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": [
-                        list(coord)
-                        for coord in self.array_index_to_coordinates(
-                            path, self.geotransform
                         )
                     ],
                 },
