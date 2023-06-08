@@ -272,7 +272,7 @@ class Grid:
                         for (full_cost, cost, pos) in to_visit.queue
                         if pos == c_pos
                     ]
-                    if c_full_cost >= min(c_full_costs):
+                    if c_full_costs != [] and c_full_cost >= min(c_full_costs):
                         continue
 
                 # Discover neighbour

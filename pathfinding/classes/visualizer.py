@@ -18,7 +18,6 @@ class Visualizer:
         self.paths = [[(p[0], p[1]) for p in path] for path in paths]
         self.geotransform = geotransform
         self.grid = grid
-        pass
 
     # adaptation of algorithm in https://www.gamedeveloper.com/programming/toward-more-realistic-pathfinding
     def smooth(self, path) -> list:

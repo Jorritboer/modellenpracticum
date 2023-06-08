@@ -387,11 +387,15 @@ def main():
                     ),
                     attribute_weights=config["attribute_weights"],
                 )
+                if path is None:
+                    print("Could not find any more paths")
+                    exit(1)
                 print("Transforming path to GEOJSON..")
                 name = args.output_name
                 name += f"_2[{interval[0]},{interval[1]}]"
                 Visualizer(
                     [path],
+                    grid,
                     (
                         grid_x_min,
                         args.resolution,
@@ -451,6 +455,10 @@ def main():
                 attribute_weights=config["attribute_weights"],
             )
             existing_paths.append(path)
+
+            if path is None:
+                print("Could not find any more paths")
+                exit(1)
 
             print("Transforming path to GEOJSON..")
             name = args.output_name
