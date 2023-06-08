@@ -29,9 +29,7 @@ def parse_rdc(arg: List[str]) -> Tuple[int, int]:
 def get_args() -> Namespace:
     """Get the args from argparser and parse options that need post-processing."""
 
-    parser = ArgumentParser(
-        prog="Pathfinder", description="Find a GEOJSON path in BGT data"
-    )
+    parser = ArgumentParser(prog="GBT", description="Find a GEOJSON path in BGT data")
 
     parser.add_argument(
         "--clear-cache",
@@ -57,13 +55,12 @@ def get_args() -> Namespace:
         default=0.0,
     )
     parser.add_argument(
-        "-f",
-        "--fraction",
-        help="if paths is equal to 2, find a different path for every [n*fraction: (n+1)*fraction] of the first path",
+        "--partitions",
+        help="the first path gets n-1 intermediate checkpoints that the second path has to go through",
         action="store",
-        type=float,
+        type=int,
         required=False,
-        default=1.0,
+        default=1,
     )
     parser.add_argument(
         "-l",
@@ -142,6 +139,48 @@ def get_args() -> Namespace:
         print("Invalid start RDC")
         exit
 
+    if args.existing_path_multiplier < 1.0:
+        print(
+            "Existing path multiplier must be at least 1."
+        )  # To prevent the same paths from generating
+        exit
+
+    if args.existing_path_radius < 1.0:
+        print("Existing path radius cannot be negative.")
+        exit
+
+    if args.max_length < 0.0:
+        print("Maximum path length cannot be negative.")
+        exit
+
+    if args.output == "":
+        print("Please provide an output name.")
+        exit
+
+    if args.padding < 0.0:
+        print("Padding cannot be negative.")
+        exit
+
+    if args.partitions < 1:
+        print("Must have at least one partition.")
+        exit
+
+    if args.partitions is not None and args.paths != 2:
+        print("Partitions can currently only be used with 2 paths.")
+        exit
+
+    if args.path_cost < 0.0:
+        print("Path cost cannot be negative.")  # To prevent negative weight cycles
+        exit
+
+    if args.paths < 1:
+        print("Must have at least one path to generate.")
+        exit
+
+    if args.resolution <= 0.0:
+        print("Resolution must be positive.")
+        exit
+
     return args
 
 
@@ -210,8 +249,8 @@ def clear_cache():
 
 
 def main():
-    args = get_args()
     config = get_config()
+    args = get_args()
 
     if args.clear_cache:
         clear_cache()
@@ -280,6 +319,7 @@ def main():
         if (
             i == 1
             and args.paths == 2
+<<<<<<< Updated upstream
             and not (args.fraction is None or args.fraction >= 1 or args.fraction <= 0)
         ):
             intervals = [
@@ -288,6 +328,16 @@ def main():
                 if args.fraction * (n + 1) <= 1
             ]
             print(intervals)
+=======
+            and not (args.partitions is None or args.partitions == 1)
+        ):
+            intervals = [
+                (n / args.partitions, (n + 1) / args.partition)
+                for n in range(args.partition)
+            ]
+            print(f"Intervals: {intervals}")
+
+>>>>>>> Stashed changes
             for interval in intervals:
                 print(f"\nFinding path_2[{interval[0]},{interval[1]}]")
                 path = grid.find_path(
