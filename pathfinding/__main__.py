@@ -277,61 +277,76 @@ def main():
 
     existing_paths = []
     for i in range(args.paths):
-        if i==1 and args.paths ==2 and not (args.fraction is None or  args.fraction >=1 or args.fraction <=0):
-            
-            intervals = [(args.fraction*n, args.fraction*(n+1)) for n in range(math.ceil(1/args.fraction)) if args.fraction*(n+1) <=1]
+        if (
+            i == 1
+            and args.paths == 2
+            and not (args.fraction is None or args.fraction >= 1 or args.fraction <= 0)
+        ):
+            intervals = [
+                (args.fraction * n, args.fraction * (n + 1))
+                for n in range(math.ceil(1 / args.fraction))
+                if args.fraction * (n + 1) <= 1
+            ]
             print(intervals)
             for interval in intervals:
                 print(f"\nFinding path_2[{interval[0]},{interval[1]}]")
                 path = grid.find_path(
-                (
-                    int(
-                        (
-                            path_width_offset
-                            if path_x_start < path_x_end
-                            else (grid_width - path_width_offset)
-                        )
-                        / args.resolution
+                    (
+                        int(
+                            (
+                                path_width_offset
+                                if path_x_start < path_x_end
+                                else (grid_width - path_width_offset)
+                            )
+                            / args.resolution
+                        ),
+                        int(
+                            (
+                                path_height_offset
+                                if path_y_start > path_y_end
+                                else (grid_height - path_height_offset)
+                            )
+                            / args.resolution
+                        ),
                     ),
-                    int(
-                        (
-                            path_height_offset
-                            if path_y_start > path_y_end
-                            else (grid_height - path_height_offset)
-                        )
-                        / args.resolution
+                    (
+                        int(
+                            (
+                                (grid_width - path_width_offset)
+                                if path_x_start < path_x_end
+                                else path_width_offset
+                            )
+                            / args.resolution
+                        ),
+                        int(
+                            (
+                                (grid_height - path_height_offset)
+                                if path_y_start > path_y_end
+                                else path_height_offset
+                            )
+                            / args.resolution
+                        ),
                     ),
-                ),
-                (
-                    int(
-                        (
-                            (grid_width - path_width_offset)
-                            if path_x_start < path_x_end
-                            else path_width_offset
-                        )
-                        / args.resolution
+                    max_length=None
+                    if args.max_length is None
+                    else args.max_length / args.resolution,
+                    path_cost=args.path_cost * args.resolution,
+                    existing_paths=[
+                        x[
+                            math.floor(interval[0] * len(x)) : math.ceil(
+                                interval[1] * len(x)
+                            )
+                        ]
+                        for x in existing_paths
+                    ],
+                    existing_path_multiplier=args.existing_path_multiplier,
+                    existing_path_radius=int(
+                        args.existing_path_radius / args.resolution
                     ),
-                    int(
-                        (
-                            (grid_height - path_height_offset)
-                            if path_y_start > path_y_end
-                            else path_height_offset
-                        )
-                        / args.resolution
-                    ),
-                ),
-                max_length=None
-                if args.max_length is None
-                else args.max_length / args.resolution,
-                path_cost=args.path_cost * args.resolution,
-                existing_paths=[x[math.floor(interval[0]*len(x)): math.ceil(interval[1]*len(x))] for x in existing_paths],
-                existing_path_multiplier=args.existing_path_multiplier,
-                existing_path_radius=int(args.existing_path_radius / args.resolution),
-                attribute_weights=config["attribute_weights"],
-                
-            )
+                    attribute_weights=config["attribute_weights"],
+                )
                 print("Transforming path to GEOJSON..")
-                name = args.output_name 
+                name = args.output_name
                 name += f"_2[{interval[0]},{interval[1]}]"
                 Visualizer(
                     [path],
@@ -397,10 +412,11 @@ def main():
 
             print("Transforming path to GEOJSON..")
             name = args.output_name
-            if args.paths > 1: 
+            if args.paths > 1:
                 name += f"_{i+1}"
             Visualizer(
                 [path],
+                grid,
                 (
                     grid_x_min,
                     args.resolution,
