@@ -1,6 +1,6 @@
 # About GBT
 GBT (Geweldige Bepaling Tracés) is a program for pathfinding through BGT data.
-It supports many parameters, like costs per layer (e.g. 'onbegroeid terreindeel') and maximum path length.
+It supports many parameters, like costs per layer and maximum path length.
 The path is found on a grid, the granularity of which can be changed at will.
 BGT data gets automatically downloaded from `pdok.nl`.
 
