@@ -2,16 +2,17 @@
 GBT (Geweldige Bepaling Tracés) is a program for pathfinding through BGT data.
 It supports many parameters, like costs per layer and maximum path length.
 The path is found on a grid, the granularity of which can be changed at will.
-BGT data gets automatically downloaded from `pdok.nl`.
+BGT data gets automatically downloaded from [PDOK](pdok.nl).
 
 # Using the pathfinder
-Use `python3 -m path-finding` to run the project.
-On the first run, this will create a `config.json` file, in which you can provide the weights used during pathfinding.
+Use `python3 -m pathfinding <xa>,<ya> <xb>,<yb>` to run the project.
+On the first invocation, this will create a `config.json` file, in which you can provide the weights used during pathfinding.
+If you want to generate the config file before running pathfinding, you can run `python3 -m pathfinding` without arguments.
 For each layer property a grid tile has, their weight will be added to the total cost of the path.
 Unregistered tiles are those without any layer properties.
 
 The pathfinder uses RDC (RijksDriehoeksCoördinaten) as its coordinate system.
-To find a path from coordinate `xa,ya` to `xb,yb`, run `python -m path-finding xa,ya xb,yb`.
+To find a path from coordinate `xa,ya` to `xb,yb`, run `python -m pathfinding xa,ya xb,yb`.
 If a path is found, the output will be written to `output/path.geojson`.
 
 Data files get cached.
