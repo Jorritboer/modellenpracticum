@@ -132,54 +132,57 @@ def get_args() -> Namespace:
         args.start = parse_rdc(args.start)
     except:
         print("Invalid start RDC")
-        exit
+        exit(1)
     try:
         args.end = parse_rdc(args.end)
     except:
         print("Invalid start RDC")
-        exit
+        exit(1)
 
-    if args.existing_path_multiplier < 1.0:
+    if (
+        args.existing_path_multiplier is not None
+        and args.existing_path_multiplier < 1.0
+    ):
         print(
             "Existing path multiplier must be at least 1."
         )  # To prevent the same paths from generating
-        exit
+        exit(1)
 
-    if args.existing_path_radius < 1.0:
+    if args.existing_path_radius is not None and args.existing_path_radius < 1.0:
         print("Existing path radius cannot be negative.")
-        exit
+        exit(1)
 
-    if args.max_length < 0.0:
+    if args.max_length is not None and args.max_length < 0.0:
         print("Maximum path length cannot be negative.")
-        exit
+        exit(1)
 
-    if args.output == "":
+    if args.output_name is not None and args.output_name == "":
         print("Please provide an output name.")
-        exit
+        exit(1)
 
-    if args.padding < 0.0:
+    if args.padding is not None and args.padding < 0.0:
         print("Padding cannot be negative.")
-        exit
+        exit(1)
 
-    if args.partitions < 1:
+    if args.partitions is not None and args.partitions < 1:
         print("Must have at least one partition.")
-        exit
+        exit(1)
 
-    if args.partitions is not None and args.paths != 2:
+    if args.partitions is not None and args.paths is not None and args.paths != 2:
         print("Partitions can currently only be used with 2 paths.")
-        exit
+        exit(1)
 
-    if args.path_cost < 0.0:
+    if args.path_cost is not None and args.path_cost < 0.0:
         print("Path cost cannot be negative.")  # To prevent negative weight cycles
-        exit
+        exit(1)
 
-    if args.paths < 1:
+    if args.paths is not None and args.paths < 1:
         print("Must have at least one path to generate.")
-        exit
+        exit(1)
 
-    if args.resolution <= 0.0:
+    if args.resolution is not None and args.resolution <= 0.0:
         print("Resolution must be positive.")
-        exit
+        exit(1)
 
     return args
 
@@ -319,16 +322,6 @@ def main():
         if (
             i == 1
             and args.paths == 2
-<<<<<<< Updated upstream
-            and not (args.fraction is None or args.fraction >= 1 or args.fraction <= 0)
-        ):
-            intervals = [
-                (args.fraction * n, args.fraction * (n + 1))
-                for n in range(math.ceil(1 / args.fraction))
-                if args.fraction * (n + 1) <= 1
-            ]
-            print(intervals)
-=======
             and not (args.partitions is None or args.partitions == 1)
         ):
             intervals = [
@@ -337,7 +330,6 @@ def main():
             ]
             print(f"Intervals: {intervals}")
 
->>>>>>> Stashed changes
             for interval in intervals:
                 print(f"\nFinding path_2[{interval[0]},{interval[1]}]")
                 path = grid.find_path(
