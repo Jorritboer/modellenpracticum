@@ -277,9 +277,7 @@ def main():
 
     existing_paths = []
     for i in range(args.paths):
-        if args.paths == 1:
-            print(f"\nFinding path..")
-        elif i==1 and args.paths ==2 and not (args.fraction is None or  args.fraction >=1 or args.fraction <=0):
+        if i==1 and args.paths ==2 and not (args.fraction is None or  args.fraction >=1 or args.fraction <=0):
             
             intervals = [(args.fraction*n, args.fraction*(n+1)) for n in range(math.ceil(1/args.fraction)) if args.fraction*(n+1) <=1]
             print(intervals)
