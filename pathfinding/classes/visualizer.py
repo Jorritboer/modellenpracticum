@@ -183,7 +183,11 @@ class Visualizer:
 
     def show(self):
         for path in self.paths:
-            colour = (randint(0, 255), randint(0, 255), randint(0, 255))
+            colour = (
+                randint(0, 255) / 255,
+                randint(0, 255) / 255,
+                randint(0, 255) / 255,
+            )
             plt.plot(
                 [x[0] for x in path],
                 [
