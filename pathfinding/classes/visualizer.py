@@ -23,10 +23,18 @@ class Visualizer:
     def smooth(self, path) -> list:
         path = path.copy()
 
-        def path_through_same_cost(p1: Tuple[int, int], p2: Tuple[int, int]):
-            """Perform a discrete raytrace through all points, checking if their costs are the same."""
+        def path_through_same_cost(
+            p1: Tuple[int, int], pMiddle: Tuple[int, int], p2: Tuple[int, int]
+        ):
+            """
+            Perform a discrete raytrace through all points, checking if their costs are the same.
+            The middle point must also have this same cost, to ensure that we only smooth lines through same-cost areas.
+            """
             (x1, y1) = p1
             (x2, y2) = p2
+
+            if self.grid.get_cost(p1) != self.grid.get_cost(pMiddle):
+                return False
 
             # When the lines are axis-aligned, we must use a different approach
             if x1 == x2:
@@ -98,12 +106,20 @@ class Visualizer:
 
             return True
 
+        # Repeat smoothing until stable
         checkPoint = 0
         currentPoint = 1
         while currentPoint + 1 < len(path):
-            if path_through_same_cost(path[checkPoint], path[currentPoint + 1]):
+            if path_through_same_cost(
+                path[checkPoint], path[currentPoint], path[currentPoint + 1]
+            ):
                 # make straight path between those points
                 path.pop(currentPoint)
+
+                # We may be able to combine two smoothed paths together next
+                if checkPoint > 0:
+                    checkPoint -= 1
+                    currentPoint -= 1
             else:
                 checkPoint = currentPoint
                 currentPoint += 1
