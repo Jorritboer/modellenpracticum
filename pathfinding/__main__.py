@@ -139,16 +139,13 @@ def get_args() -> Namespace:
         print("Invalid start RDC")
         exit(1)
 
-    if (
-        args.existing_path_multiplier is not None
-        and args.existing_path_multiplier < 1.0
-    ):
+    if args.existing_path_multiplier < 1.0:
         print(
             "Existing path multiplier must be at least 1."
         )  # To prevent the same paths from generating
         exit(1)
 
-    if args.existing_path_radius is not None and args.existing_path_radius < 1.0:
+    if args.existing_path_radius < 0.0:
         print("Existing path radius cannot be negative.")
         exit(1)
 
@@ -156,31 +153,31 @@ def get_args() -> Namespace:
         print("Maximum path length cannot be negative.")
         exit(1)
 
-    if args.output_name is not None and args.output_name == "":
+    if args.output_name == "":
         print("Please provide an output name.")
         exit(1)
 
-    if args.padding is not None and args.padding < 0.0:
+    if args.padding < 0.0:
         print("Padding cannot be negative.")
         exit(1)
 
-    if args.partitions is not None and args.partitions < 1:
+    if args.partitions < 1:
         print("Must have at least one partition.")
         exit(1)
 
-    if args.partitions is not None and args.paths is not None and args.paths != 2:
+    if args.partitions > 1 and args.paths != 2:
         print("Partitions can currently only be used with 2 paths.")
         exit(1)
 
-    if args.path_cost is not None and args.path_cost < 0.0:
+    if args.path_cost < 0.0:
         print("Path cost cannot be negative.")  # To prevent negative weight cycles
         exit(1)
 
-    if args.paths is not None and args.paths < 1:
+    if args.paths < 1:
         print("Must have at least one path to generate.")
         exit(1)
 
-    if args.resolution is not None and args.resolution <= 0.0:
+    if args.resolution <= 0.0:
         print("Resolution must be positive.")
         exit(1)
 
