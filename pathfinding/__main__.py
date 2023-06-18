@@ -322,8 +322,8 @@ def main():
             and not (args.partitions is None or args.partitions == 1)
         ):
             intervals = [
-                (n / args.partitions, (n + 1) / args.partition)
-                for n in range(args.partition)
+                (n / args.partitions, (n + 1) / args.partitions)
+                for n in range(args.partitions)
             ]
             print(f"Intervals: {intervals}")
 
