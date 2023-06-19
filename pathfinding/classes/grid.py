@@ -157,7 +157,7 @@ class Grid:
     ) -> float:
         # Get the A* heuristic for a tile.
         # Uses the given end tile for A* to calculate the heuristic with.
-        return path_cost * dist(from_pos, to_pos)
+        return (1+path_cost) * dist(from_pos, to_pos)
 
     def path_to(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         """
