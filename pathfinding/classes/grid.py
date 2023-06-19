@@ -238,11 +238,9 @@ class Grid:
         while len(to_visit.queue) > 0:
             # Visit next tile
             s_full_cost, s_cost, s_pos = to_visit.get()
-            if self.get_visit_state(s_pos) == VisitState.Visited or (
-                # A more efficient option could be:
-                # check if the current length plus direct distance to the end exceeds max_length
+            if (max_length is None and self.get_visit_state(s_pos) == VisitState.Visited) or (
                 max_length is not None
-                and self.get_path_length(s_pos) >= max_length
+                and self.get_path_length(s_pos) + dist(s_pos, to_pos) > max_length
             ):
                 continue
 
